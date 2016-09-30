@@ -10,3 +10,8 @@ int ResourceManager::Init()
 {
 	return EXIT_SUCCESS;
 }
+
+int ResourceManager::ClearAll()
+{
+	return EXIT_SUCCESS;
+}

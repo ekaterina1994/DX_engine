@@ -6,6 +6,11 @@ class UIManager
 public:
 	UIManager();
 	int Init(HINSTANCE hInstance, int ShowWnd);
+	int ClearAll();
+	int getHeight();
+	int getWidth();
+	HWND getHandle();
+	bool is_fullScreen();
 private:
 	HWND m_hwnd;
 	bool m_isFullScreen;

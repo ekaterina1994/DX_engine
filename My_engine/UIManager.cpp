@@ -108,3 +108,28 @@ int UIManager::Init(HINSTANCE hInstance, int ShowWnd)
 	return EXIT_SUCCESS;
 }
 
+
+int UIManager::getHeight()
+{
+	return m_height;
+}
+
+int UIManager::getWidth()
+{
+	return m_width;
+}
+
+HWND UIManager::getHandle()
+{
+	return m_hwnd;
+}
+
+bool UIManager::is_fullScreen()
+{
+	return m_isFullScreen;
+}
+
+int UIManager::ClearAll()
+{
+	return EXIT_SUCCESS;
+}

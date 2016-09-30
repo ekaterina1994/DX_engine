@@ -68,9 +68,14 @@ int Application::Run()
 
 int Application::ClearAll()
 {
-	delete app_uiManager;
-	delete app_renderingManager;
+	app_resourceManager->ClearAll();
 	delete app_resourceManager;
+
+	app_renderingManager->ClearAll();
+	delete app_renderingManager;
+
+	app_uiManager->ClearAll();
+	delete app_uiManager;
 
 	return EXIT_SUCCESS;
 }
