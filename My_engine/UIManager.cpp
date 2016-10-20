@@ -1,6 +1,6 @@
 #include "UIManager.h"
 #include "stdafx.h"
-#include "windows.h"
+#include "Application.h"
 
 LRESULT CALLBACK WndProc(HWND hwnd,
 	UINT msg,
@@ -15,14 +15,14 @@ LRESULT CALLBACK WndProc(HWND hwnd,
 			if (MessageBox(0, L"Are you sure you want to exit?",
 				L"Really?", MB_YESNO | MB_ICONQUESTION) == IDYES)
 			{
-				MainApp->m_isRunning = false;
+				g_ApplicationPtr->Stop();
 				DestroyWindow(hwnd);
 			}
 		}
 		return 0;
 
 	case WM_DESTROY: // x button on top right corner of window was pressed
-		MainApp->m_isRunning = false;
+		g_ApplicationPtr->Stop();
 		PostQuitMessage(0);
 		return 0;
 	}

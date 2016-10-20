@@ -1,7 +1,7 @@
 #include "D3DHelper.h"
 #include "UIManager.h"
 
-int D3DHelper_CreateDXGIFactory(IDXGIFactory4* dxgiFactory)
+int D3DHelper_CreateDXGIFactory(IDXGIFactory4*& dxgiFactory)
 {
 	HRESULT hr;
 
@@ -14,7 +14,7 @@ int D3DHelper_CreateDXGIFactory(IDXGIFactory4* dxgiFactory)
 	return EXIT_SUCCESS;
 }
 
-int D3DHelper_CreateDevice(IDXGIFactory4* dxgiFactory, ID3D12Device* device)
+int D3DHelper_CreateDevice(IDXGIFactory4*& dxgiFactory, ID3D12Device*& device)
 {
 	HRESULT hr;
 
@@ -66,7 +66,7 @@ int D3DHelper_CreateDevice(IDXGIFactory4* dxgiFactory, ID3D12Device* device)
 	return EXIT_SUCCESS;
 }
 
-int D3DHelper_CreateCommandQueue(IDXGIFactory4* dxgiFactory, ID3D12Device* device, ID3D12CommandQueue* commandQueue)
+int D3DHelper_CreateCommandQueue(IDXGIFactory4*& dxgiFactory, ID3D12Device*& device, ID3D12CommandQueue*& commandQueue)
 {
 	HRESULT hr;
 
@@ -83,11 +83,11 @@ int D3DHelper_CreateCommandQueue(IDXGIFactory4* dxgiFactory, ID3D12Device* devic
 	return EXIT_SUCCESS;
 }
 
-int D3DHelper_CreateSwapChain(	UIManager* uiManager, 
-								IDXGIFactory4* dxgiFactory, 
-								ID3D12CommandQueue* commandQueue, 
+int D3DHelper_CreateSwapChain(	UIManager*& uiManager, 
+								IDXGIFactory4*& dxgiFactory, 
+								ID3D12CommandQueue*& commandQueue, 
 								int frameBufferCount, 
-								IDXGISwapChain3* swapchain)
+								IDXGISwapChain3*& swapchain)
 {
 	DXGI_MODE_DESC backBufferDesc = {}; // this is to describe our display mode
 	backBufferDesc.Width = uiManager->getWidth(); // buffer width
@@ -121,7 +121,7 @@ int D3DHelper_CreateSwapChain(	UIManager* uiManager,
 	return EXIT_SUCCESS;
 }
 
-int D3DHelper_createRTVDescriptorHeap(ID3D12Device* device, int frameBufferCount, ID3D12DescriptorHeap* rtvDescriptorHeap)
+int D3DHelper_createRTVDescriptorHeap(ID3D12Device*& device, int frameBufferCount, ID3D12DescriptorHeap*& rtvDescriptorHeap)
 {
 	HRESULT hr;
 
@@ -141,10 +141,10 @@ int D3DHelper_createRTVDescriptorHeap(ID3D12Device* device, int frameBufferCount
 	return EXIT_SUCCESS;
 }
 
-int D3DHelper_createRenderTargets(	ID3D12Device* device, 
+int D3DHelper_createRenderTargets(	ID3D12Device*& device, 
 									int frameBufferCount, 
-									ID3D12DescriptorHeap* rtvDescriptorHeap, 
-									IDXGISwapChain3* swapchain,
+									ID3D12DescriptorHeap*& rtvDescriptorHeap, 
+									IDXGISwapChain3*& swapchain,
 									ID3D12Resource* renderTargets[])
 {
 	HRESULT hr;
@@ -179,7 +179,7 @@ int D3DHelper_createRenderTargets(	ID3D12Device* device,
 	return EXIT_SUCCESS;
 }
 
-int D3DHelper_createCommandAllocator(ID3D12Device* device, int frameBufferCount, ID3D12CommandAllocator* commandAllocator[])
+int D3DHelper_createCommandAllocator(ID3D12Device*& device, int frameBufferCount, ID3D12CommandAllocator* commandAllocator[])
 {
 	HRESULT hr;
 	for (int i = 0; i < frameBufferCount; i++)
@@ -193,7 +193,7 @@ int D3DHelper_createCommandAllocator(ID3D12Device* device, int frameBufferCount,
 
 	return EXIT_SUCCESS;
 }
-int D3DHelper_createFencesAndFenceEvent(ID3D12Device* device,
+int D3DHelper_createFencesAndFenceEvent(ID3D12Device*& device,
 	int frameBufferCount,
 	ID3D12Fence* fence[],
 	HANDLE fenceEvent,
@@ -221,7 +221,7 @@ int D3DHelper_createFencesAndFenceEvent(ID3D12Device* device,
 	return EXIT_SUCCESS;
 }
 
-int D3DHelper_createRootSignature(ID3D12Device* device, ID3D12RootSignature* rootSignature)
+int D3DHelper_createRootSignature(ID3D12Device*& device, ID3D12RootSignature*& rootSignature)
 {
 	HRESULT hr;
 	// create a root descriptor, which explains where to find the data for this root parameter

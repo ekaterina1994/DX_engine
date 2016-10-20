@@ -1,6 +1,5 @@
 #include "stdafx.h"
-
-Application* MainApp = nullptr;
+#include "Application.h"
 
 #include <windows.h>
 
@@ -9,19 +8,18 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	LPSTR lpCmdLine,
 	int nShowCmd)
 {
-	MainApp = new Application();
-
-	if (MainApp->Init(hInstance, nShowCmd) != EXIT_SUCCESS)
+	Application* MainApp = new Application();
+	if (MainApp->Init(hInstance, nShowCmd) == EXIT_FAILURE)
 	{
 		delete MainApp;
 		return EXIT_FAILURE;
 	}
-	if (MainApp->Run() != EXIT_SUCCESS)
+	if (MainApp->Run() == EXIT_FAILURE)
 	{
 		delete MainApp;
 		return EXIT_FAILURE;
 	}
-	if (MainApp->ClearAll() != EXIT_SUCCESS)
+	if (MainApp->ClearAll() == EXIT_FAILURE)
 	{
 		delete MainApp;
 		return EXIT_FAILURE;

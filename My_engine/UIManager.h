@@ -1,6 +1,8 @@
 #pragma once
 #include <Windows.h>
 
+class Application;
+
 class UIManager
 {
 public:

@@ -2,11 +2,11 @@
 #include "stdafx.h"
 #include "D3DHelper.h"
 
+#include "Application.h"
 
 
 RenderingManager::RenderingManager()
 {
-
 }
 
 int RenderingManager::Init()
@@ -21,12 +21,12 @@ int RenderingManager::Init()
 		return EXIT_FAILURE;
 	}
 
-	if (D3DHelper_CreateCommandQueue(m_device, m_commandQueue) == EXIT_FAILURE)
+	if (D3DHelper_CreateCommandQueue(m_dxgiFactory, m_device, m_commandQueue) == EXIT_FAILURE)
 	{
 		return EXIT_FAILURE;
 	}
 
-	if (D3DHelper_CreateSwapChain(MainApp->app_uiManager, m_dxgiFactory, m_commandQueue, m_frameBufferCount, m_swapchain) == EXIT_FAILURE)
+	if (D3DHelper_CreateSwapChain(g_ApplicationPtr->m_uiManager, m_dxgiFactory, m_commandQueue, m_frameBufferCount, m_swapchain) == EXIT_FAILURE)
 	{
 		return EXIT_FAILURE;
 	}

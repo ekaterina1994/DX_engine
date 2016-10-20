@@ -22,7 +22,7 @@
     <ProjectGuid>{23B6B13B-8E52-41F6-A5F8-19FFC9BE3223}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>My_engine</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -107,6 +107,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d12.lib;d3dcompiler.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -143,12 +144,16 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d12.lib;d3dcompiler.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="D3DHelper.cpp" />
+    <ClCompile Include="IScene.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="OneSphereScene.cpp" />
     <ClCompile Include="RenderingManager.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -157,6 +162,9 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="D3DHelper.h" />
     <ClInclude Include="d3dx12.h" />
+    <ClInclude Include="IScene.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="OneSphereScene.h" />
     <ClInclude Include="RenderingManager.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="stdafx.h" />

@@ -1,9 +1,25 @@
 #pragma once
 #include "stdafx.h"
+#include "Application.h"
 #include "D3DHelper.h"
 
 class RenderingManager
 {
+	class Object
+	{
+	public:
+		Object() {};
+		int Init() {};
+	private:
+
+	};
+
+	struct Vertex {
+		Vertex(float x, float y, float z, float r, float g, float b, float a) : pos(x, y, z), color(r, g, b, a) {}
+		XMFLOAT3 pos;
+		XMFLOAT4 color;
+	};
+
 public:
 	RenderingManager();
 	int Init();

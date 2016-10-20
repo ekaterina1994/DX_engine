@@ -2,42 +2,79 @@
 #include "stdafx.h"
 #include <stdio.h>
 
+Application* g_ApplicationPtr;
+
 Application::Application()
 {
-	app_uiManager			= nullptr;
-	app_renderingManager	= nullptr;
-	app_resourceManager		= nullptr;
+	g_ApplicationPtr = this;
+
+	m_uiManager			= nullptr;
+	m_renderingManager	= nullptr;
+	m_resourceManager	= nullptr;
+
+	m_mainScene			= nullptr;
+
 	m_isRunning = true;
+}
+
+int Application::InitManagers(HINSTANCE hInstance, int ShowWnd)
+{
+	int initialization_status = EXIT_SUCCESS;
+	
+	if (!m_uiManager)
+	{
+		m_uiManager = new UIManager();
+		if (m_uiManager->Init(hInstance, ShowWnd) == EXIT_FAILURE)
+		{
+			printf("UIManager initialization failed!");
+			initialization_status = EXIT_FAILURE;
+		}
+	}
+
+	if (!m_renderingManager)
+	{
+		m_renderingManager = new RenderingManager();
+		if (m_renderingManager->Init() == EXIT_FAILURE)
+		{
+			printf("RenderingManager initialization failed!");
+			initialization_status = EXIT_FAILURE;
+		}
+	}
+
+	if (!m_resourceManager)
+	{
+		m_resourceManager = new ResourceManager();
+		if (m_resourceManager->Init() == EXIT_FAILURE)
+		{
+			printf("ResourceManager initialization failed!");
+			initialization_status = EXIT_FAILURE;
+		}
+	}
+
+	return initialization_status;
+}
+
+int Application::InitScene()
+{
+	// Here must be well readble code, which is describing MAIN scene details
+	return EXIT_SUCCESS;
 }
 
 int Application::Init(HINSTANCE hInstance, int ShowWnd)
 {
-	int initialization_status = 0;
-	if (!app_uiManager)
+	int initialization_status = EXIT_SUCCESS;
+
+	if (InitManagers(hInstance, ShowWnd) == EXIT_FAILURE)
 	{
-		app_uiManager = new UIManager();
-		if (app_uiManager->Init(hInstance, ShowWnd))
-		{
-			printf("UIManager initialization failed!");
-			initialization_status += EXIT_FAILURE;
-		}
+		printf("Managers initialization failed!");
+		initialization_status = EXIT_FAILURE;
 	}
 
-	if (!app_renderingManager)
+	if (InitScene() == EXIT_FAILURE)
 	{
-		app_renderingManager = new RenderingManager();
-		if (app_renderingManager->Init())
-		{
-			printf("RenderingManager initialization failed!");
-			initialization_status += EXIT_FAILURE;
-		}
-	}
-
-	if (!app_resourceManager)
-	{
-		app_resourceManager = new ResourceManager();
-		app_resourceManager->Init();
-	}
+		printf("Models initialization failed!");
+		initialization_status = EXIT_FAILURE;
+	}	
 
 	return initialization_status;
 }
@@ -59,23 +96,60 @@ int Application::Run()
 		else 
 		{
 			// run game code
-			//Update(); // update the game logic
-			//Render(); // execute the command queue (rendering the scene is the result of the gpu executing the command lists)
+			Update(); // update the game logic
+			Render(); // execute the command queue (rendering the scene is the result of the gpu executing the command lists)
 		}
 	}
 	return EXIT_SUCCESS;
 }
 
+
+int Application::Update()
+{
+	return EXIT_SUCCESS;
+}
+
+int Application::Render()
+{
+	return EXIT_SUCCESS;
+}
+
+int Application::IsRunning()
+{
+	return m_isRunning ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int Application::Stop()
+{
+	m_isRunning = false;
+	return EXIT_SUCCESS;
+}
+
 int Application::ClearAll()
 {
-	app_resourceManager->ClearAll();
-	delete app_resourceManager;
+	if (m_resourceManager)
+	{
+		m_resourceManager->ClearAll();
+		delete m_resourceManager;
+	}
 
-	app_renderingManager->ClearAll();
-	delete app_renderingManager;
+	if (m_renderingManager)
+	{
+		m_renderingManager->ClearAll();
+		delete m_renderingManager;
+	}
 
-	app_uiManager->ClearAll();
-	delete app_uiManager;
+	if (m_uiManager)
+	{
+		m_uiManager->ClearAll();
+		delete m_uiManager;
+	}
+
+	if (m_mainScene)
+	{
+		m_mainScene->ClearAll();
+		delete m_mainScene;
+	}
 
 	return EXIT_SUCCESS;
 }
