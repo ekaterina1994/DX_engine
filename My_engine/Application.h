@@ -39,5 +39,4 @@ private:
 	ResourceManager*	m_resourceManager;
 
 	IScene*				m_mainScene;
-//	map<string, Model*>  m_models;
 };

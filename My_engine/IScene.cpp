@@ -1,10 +1,9 @@
 #include "IScene.h"
 
 
-int IScene::AddModel(string name, Model && inModel)
+int IScene::AddModel(string name, Model* inModel)
 {
-	Model* modelToAdd = new Model(inModel);
-	m_models.insert({ name, modelToAdd });
+	m_models.insert({ name, inModel });
 	return EXIT_SUCCESS;
 }
 

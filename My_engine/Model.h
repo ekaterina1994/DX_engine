@@ -1,27 +1,27 @@
 #pragma once
 #include "stdafx.h"
+
 #include <string>
+#include <vector>
 
 class Model 
 {
 	// Model is rather just a set of data than some worker instance
 public:
 	// data structures
-	struct VertexBuffer{};
-	struct IndexBuffer {};
+	typedef std::vector<float> VertexBuffer;
+	typedef std::vector<int> IndexBuffer;
 	struct PipelineState {};
 	struct Vector4X4{};
 	struct Matrix4X4{};
 
-
-	typedef string ShaderName;
-
+	struct CompiledShaderObject {};
 	
 public:
 	Model();
-	int setGeometry(VertexBuffer* vBuf, IndexBuffer* iBuf);
-	int setShaders(ShaderName* vShader, ShaderName* pShader);
-	int setPipelineState(PipelineState* pipelineState);
+	int setGeometry(string objFile);
+	int setShaders(string vShader, string pShader);
+	int setPipelineState(string pipelineState);
 
 	int ClearAll();
 
@@ -33,16 +33,16 @@ private:
 	IndexBuffer*  m_indexBuffer;
 
 	// положение в пространстве
-	Vector4X4*    m_position;
-	Matrix4X4*    m_worldMatrix;
-	Matrix4X4*    m_rotationMatrix;
+	Vector4X4* m_position;
+	Matrix4X4* m_worldMatrix;
+	Matrix4X4* m_rotationMatrix;
 
 
 	// Rasterization
 		// Shader names
 		// Rasterizator state
-	ShaderName*    m_vertexShaderName;
-	ShaderName*    m_pixelShaderName;
+	CompiledShaderObject* m_vertexShaderName;
+	CompiledShaderObject* m_pixelShaderName;
 	PipelineState* m_pipelineState;
 
 	// Texture sampling

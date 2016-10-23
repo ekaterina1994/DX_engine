@@ -24,6 +24,9 @@ public:
 	RenderingManager();
 	int Init();
 	int ClearAll();
+	int Update();
+	int RenderFrame();
+
 private:
 	const int static m_frameBufferCount = 3;
 

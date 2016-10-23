@@ -11,7 +11,9 @@ class IScene
 public:
 	virtual int Update() = 0;
 
-	int AddModel(string name, Model && inModel);
+	int SetUpGlobalPipelineState() { return EXIT_SUCCESS; }
+
+	int AddModel(string name, Model* inModel);
 
 	int ClearAll();
 

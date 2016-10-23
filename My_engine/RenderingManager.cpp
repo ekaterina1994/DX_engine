@@ -7,6 +7,7 @@
 
 RenderingManager::RenderingManager()
 {
+
 }
 
 int RenderingManager::Init()
@@ -66,6 +67,16 @@ int RenderingManager::Init()
 		return EXIT_FAILURE;
 	}
 
+	return EXIT_SUCCESS;
+}
+
+int RenderingManager::Update()
+{
+	return EXIT_SUCCESS;
+}
+
+int RenderingManager::RenderFrame()
+{
 	return EXIT_SUCCESS;
 }
 

@@ -1,6 +1,11 @@
 #include "Application.h"
+#include "OneSphereScene.h"
+#include "Model.h"
+
 #include "stdafx.h"
+
 #include <stdio.h>
+
 
 Application* g_ApplicationPtr;
 
@@ -26,7 +31,7 @@ int Application::InitManagers(HINSTANCE hInstance, int ShowWnd)
 		m_uiManager = new UIManager();
 		if (m_uiManager->Init(hInstance, ShowWnd) == EXIT_FAILURE)
 		{
-			printf("UIManager initialization failed!");
+			OutputDebugString(L"UIManager initialization failed!");
 			initialization_status = EXIT_FAILURE;
 		}
 	}
@@ -36,7 +41,7 @@ int Application::InitManagers(HINSTANCE hInstance, int ShowWnd)
 		m_renderingManager = new RenderingManager();
 		if (m_renderingManager->Init() == EXIT_FAILURE)
 		{
-			printf("RenderingManager initialization failed!");
+			OutputDebugString(L"RenderingManager initialization failed!");
 			initialization_status = EXIT_FAILURE;
 		}
 	}
@@ -46,7 +51,7 @@ int Application::InitManagers(HINSTANCE hInstance, int ShowWnd)
 		m_resourceManager = new ResourceManager();
 		if (m_resourceManager->Init() == EXIT_FAILURE)
 		{
-			printf("ResourceManager initialization failed!");
+			OutputDebugString(L"ResourceManager initialization failed!");
 			initialization_status = EXIT_FAILURE;
 		}
 	}
@@ -56,23 +61,40 @@ int Application::InitManagers(HINSTANCE hInstance, int ShowWnd)
 
 int Application::InitScene()
 {
-	// Here must be well readble code, which is describing MAIN scene details
-	return EXIT_SUCCESS;
+	return m_resourceManager->InitSceneFromConfigFile("config.json");
 }
 
+/*
+int Application::InitScene()
+{
+	m_mainScene = new OneSphereScene;
+	
+	// scene setup
+	m_mainScene->SetUpGlobalPipelineState();
+	
+	// models on scene
+	Model* model = new Model;
+	model->setGeometry("Models//teapot//teapot.obj");
+	model->setShaders("VertexShader.hlsl", "PixelShader.hlsl");
+	model->setPipelineState("");
+	m_mainScene->AddModel("Cube", model);
+
+	return EXIT_SUCCESS;
+}
+*/
 int Application::Init(HINSTANCE hInstance, int ShowWnd)
 {
 	int initialization_status = EXIT_SUCCESS;
 
 	if (InitManagers(hInstance, ShowWnd) == EXIT_FAILURE)
 	{
-		printf("Managers initialization failed!");
+		OutputDebugString(L"Managers initialization failed!");
 		initialization_status = EXIT_FAILURE;
 	}
 
 	if (InitScene() == EXIT_FAILURE)
 	{
-		printf("Models initialization failed!");
+		OutputDebugString(L"Models initialization failed!");
 		initialization_status = EXIT_FAILURE;
 	}	
 
@@ -83,7 +105,6 @@ int Application::Run()
 {
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG)); 
-	OutputDebugString(L"I have started!\n");
 	while (m_isRunning)
 	{
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -106,11 +127,13 @@ int Application::Run()
 
 int Application::Update()
 {
+	m_renderingManager->Update();
 	return EXIT_SUCCESS;
 }
 
 int Application::Render()
 {
+	m_renderingManager->RenderFrame();
 	return EXIT_SUCCESS;
 }
 
