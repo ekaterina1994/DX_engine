@@ -1,5 +1,4 @@
 #include "Application.h"
-#include "OneSphereScene.h"
 #include "Model.h"
 
 #include "stdafx.h"
@@ -16,8 +15,6 @@ Application::Application()
 	m_uiManager			= nullptr;
 	m_renderingManager	= nullptr;
 	m_resourceManager	= nullptr;
-
-	m_mainScene			= nullptr;
 
 	m_isRunning = true;
 }
@@ -61,27 +58,9 @@ int Application::InitManagers(HINSTANCE hInstance, int ShowWnd)
 
 int Application::InitScene()
 {
-	return m_resourceManager->InitSceneFromConfigFile("config.json");
+	return m_resourceManager->InitScene();
 }
 
-/*
-int Application::InitScene()
-{
-	m_mainScene = new OneSphereScene;
-	
-	// scene setup
-	m_mainScene->SetUpGlobalPipelineState();
-	
-	// models on scene
-	Model* model = new Model;
-	model->setGeometry("Models//teapot//teapot.obj");
-	model->setShaders("VertexShader.hlsl", "PixelShader.hlsl");
-	model->setPipelineState("");
-	m_mainScene->AddModel("Cube", model);
-
-	return EXIT_SUCCESS;
-}
-*/
 int Application::Init(HINSTANCE hInstance, int ShowWnd)
 {
 	int initialization_status = EXIT_SUCCESS;
@@ -127,7 +106,7 @@ int Application::Run()
 
 int Application::Update()
 {
-	m_renderingManager->Update();
+	m_resourceManager->Update();
 	return EXIT_SUCCESS;
 }
 
@@ -166,12 +145,6 @@ int Application::ClearAll()
 	{
 		m_uiManager->ClearAll();
 		delete m_uiManager;
-	}
-
-	if (m_mainScene)
-	{
-		m_mainScene->ClearAll();
-		delete m_mainScene;
 	}
 
 	return EXIT_SUCCESS;

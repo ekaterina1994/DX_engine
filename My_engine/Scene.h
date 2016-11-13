@@ -6,18 +6,20 @@
 #include "Model.h"
 
 // It's not "clear" interface... but I want to keep name IScene for understandability
-class IScene
+class Scene
 {
 public:
-	virtual int Update() = 0;
+	int Update() { return EXIT_SUCCESS; }
 
 	int SetUpGlobalPipelineState() { return EXIT_SUCCESS; }
 
-	int AddModel(string name, Model* inModel);
+	int AddModel(string name, Model&& inModel);
+
+	map<string, Model>& getModels() { return m_models; }
 
 	int ClearAll();
 
 private:
-	map<string, Model*>		m_models;
+	map<string, Model>		m_models;
 
 };

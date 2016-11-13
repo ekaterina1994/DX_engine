@@ -7,5 +7,6 @@
 #include <stdlib.h>
 #include<iostream>
 #include <tchar.h>
+#include <assert.h>
 using namespace std;
 

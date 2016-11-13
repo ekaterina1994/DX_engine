@@ -6,9 +6,9 @@
 #include "tiny_obj_loader.h"
 
 int ConvertGeomentry(	string objFile,
-						Model::VertexBuffer*& vertexBuffer,
-						Model::IndexBuffer*& indexBuffer)
-{
+						Model::Vertex*& vertexBuffer,
+						uint64_t& indexBuffer)
+{/*
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -23,6 +23,6 @@ int ConvertGeomentry(	string objFile,
 		{
 			indexBuffer->push_back(indices.vertex_index);
 		}
-	}
+	}*/
 	return EXIT_SUCCESS;
 }

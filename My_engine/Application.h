@@ -7,9 +7,6 @@
 #include "RenderingManager.h"
 #include "ResourceManager.h"
 
-#include "Model.h"
-#include "IScene.h"
-
 extern class Application* g_ApplicationPtr;
 
 class Application
@@ -38,5 +35,4 @@ private:
 	RenderingManager*	m_renderingManager;
 	ResourceManager*	m_resourceManager;
 
-	IScene*				m_mainScene;
 };

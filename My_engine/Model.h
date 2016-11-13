@@ -1,54 +1,42 @@
 #pragma once
 #include "stdafx.h"
 
+#include "D3DHelper.h"
+
 #include <string>
 #include <vector>
 
-class Model 
+struct Model 
 {
-	// Model is rather just a set of data than some worker instance
-public:
-	// data structures
-	typedef std::vector<float> VertexBuffer;
-	typedef std::vector<int> IndexBuffer;
-	struct PipelineState {};
-	struct Vector4X4{};
-	struct Matrix4X4{};
+	struct Material
+	{
+		ID3D12PipelineState*	m_pipelineState;
+		ID3D12RootSignature*	m_root_signature;
+	};
 
-	struct CompiledShaderObject {};
+	struct Geometry
+	{
+		D3D12_VERTEX_BUFFER_VIEW	m_vertexBufferView;
+		D3D12_INDEX_BUFFER_VIEW		m_indexBufferView;
+		int							m_numIndices; // TODO: init numIndices for models
+	};
+
+	struct Position
+	{
+		XMFLOAT4X4	m_worldMat;
+		XMFLOAT4X4	m_rotMat;
+		XMFLOAT4	m_position;
+	};
+
+	Model(Material m, Geometry g, Position p)
+	{
+		m_material = m;
+		m_geometry = g;
+		m_position = p;
+	}
 	
-public:
-	Model();
-	int setGeometry(string objFile);
-	int setShaders(string vShader, string pShader);
-	int setPipelineState(string pipelineState);
+	Material	m_material;
+	Geometry	m_geometry;
+	Position	m_position;
 
-	int ClearAll();
-
-private:
-	// Skeletone of the model
-		// Vertex buffer
-		// Index buffer
-	VertexBuffer* m_vertexBuffer;
-	IndexBuffer*  m_indexBuffer;
-
-	// положение в пространстве
-	Vector4X4* m_position;
-	Matrix4X4* m_worldMatrix;
-	Matrix4X4* m_rotationMatrix;
-
-
-	// Rasterization
-		// Shader names
-		// Rasterizator state
-	CompiledShaderObject* m_vertexShaderName;
-	CompiledShaderObject* m_pixelShaderName;
-	PipelineState* m_pipelineState;
-
-	// Texture sampling
-		// Textures data
-		// Texture coordinates
-		// Sampler state
-
-	// textures support still isn't implemented :(
 };

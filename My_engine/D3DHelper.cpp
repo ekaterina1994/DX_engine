@@ -141,6 +141,61 @@ int D3DHelper_createRTVDescriptorHeap(ID3D12Device*& device, int frameBufferCoun
 	return EXIT_SUCCESS;
 }
 
+int D3DHelper_createViewportAndScissorRect(int Width, int Height, D3D12_VIEWPORT& viewport, D3D12_RECT& scissorRect)
+{
+	// Fill out the Viewport
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = Width;
+	viewport.Height = Height;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+
+	// Fill out a scissor rect
+	scissorRect.left = 0;
+	scissorRect.top = 0;
+	scissorRect.right = Width;
+	scissorRect.bottom = Height;
+	return EXIT_SUCCESS;
+}
+
+int D3DHelper_createDSVDescriptorHeap(ID3D12Device*& device, ID3D12Resource*& depthStencilBuffer, int Width, int Height, ID3D12DescriptorHeap*& dsvDescriptorHeap)
+{
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc = {};
+	dsvHeapDesc.NumDescriptors = 1;
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	if (FAILED(
+		device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvDescriptorHeap))
+	))
+	{
+		return EXIT_FAILURE;
+	}
+
+	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
+	depthStencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+	D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+	depthOptimizedClearValue.Format = DXGI_FORMAT_D32_FLOAT;
+	depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+	depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+	device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT, Width, Height, 1, 0, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		&depthOptimizedClearValue,
+		IID_PPV_ARGS(&depthStencilBuffer)
+	);
+	dsvDescriptorHeap->SetName(L"Depth/Stencil Resource Heap");
+
+	device->CreateDepthStencilView(depthStencilBuffer, &depthStencilDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	return EXIT_SUCCESS;
+}
+
 int D3DHelper_createRenderTargets(	ID3D12Device*& device, 
 									int frameBufferCount, 
 									ID3D12DescriptorHeap*& rtvDescriptorHeap, 

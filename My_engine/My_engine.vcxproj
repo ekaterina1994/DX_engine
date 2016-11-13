@@ -74,6 +74,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\Program Files %28x86%29\Windows Kits\10\Include\10.0.10586.0\shared;C:\Program Files %28x86%29\Windows Kits\10\Include\10.0.10586.0\um;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.10586.0\um\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -103,12 +105,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\eignashe\Documents\Visual Studio 2015\Projects\My_engine\tinyObjLoader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Windows Kits\10\Include\10.0.10586.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d12.lib;d3dcompiler.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.10586.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -139,7 +142,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\eignashe\Documents\Visual Studio 2015\Projects\My_engine\tinyObjLoader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\Windows Kits\10\Include\10.0.10586.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -147,15 +150,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>d3d12.lib;d3dcompiler.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Windows Kits\10\Lib\10.0.10586.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="D3DHelper.cpp" />
-    <ClCompile Include="IScene.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Model.cpp" />
-    <ClCompile Include="OneSphereScene.cpp" />
     <ClCompile Include="RenderingManager.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="UIManager.cpp" />
@@ -165,9 +167,8 @@
     <ClInclude Include="D3DHelper.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="GeomertyConverter.h" />
-    <ClInclude Include="IScene.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Model.h" />
-    <ClInclude Include="OneSphereScene.h" />
     <ClInclude Include="RenderingManager.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="stdafx.h" />
