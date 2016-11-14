@@ -149,7 +149,7 @@ int D3DHelper_createViewportAndScissorRect(int Width, int Height, D3D12_VIEWPORT
 	viewport.Width = Width;
 	viewport.Height = Height;
 	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
+	viewport.MaxDepth = 10.0f;
 
 	// Fill out a scissor rect
 	scissorRect.left = 0;

@@ -37,7 +37,7 @@ public:
 
 private:
 	//NotificateListeners();
-
+	int RunCommandList();
 
 	int UpdatePipeline();
 	int WaitForPreviousFrame();

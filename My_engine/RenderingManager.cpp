@@ -5,7 +5,7 @@
 #include "Application.h"
 
 
-const float RenderingManager::m_clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+const float RenderingManager::m_clearColor[] = { 0.0f, 1.0f, 0.0f, 1.0f };
 
 RenderingManager::RenderingManager()
 {
@@ -101,6 +101,7 @@ int RenderingManager::HandleD3DError()
 //	Running = false;
 	//assert(false);
 
+	OutputDebugString(L"D3D ERROR!");
 	return EXIT_FAILURE;
 }
 
@@ -182,18 +183,13 @@ int RenderingManager::UpdatePipeline()
 	return EXIT_SUCCESS;
 }
 
-int RenderingManager::RenderFrame()
+int RenderingManager::RunCommandList()
 {
-	// TODO: UPDATEsubresources!! We have to check here, did we do initial uploading resources!
-	if (WaitForPreviousFrame() != EXIT_SUCCESS)
-	{
-		return EXIT_FAILURE;
-	}
+	ID3D12CommandList* ppCommandLists[] = { m_commandList };
 
-	if (UpdatePipeline() != EXIT_SUCCESS)
-	{
-		return EXIT_FAILURE;
-	}
+	m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
+
+
 	// TODO: create different functions for logic below
 	// Update pipeline (filling command list)
 	// Execute command lists
@@ -201,9 +197,6 @@ int RenderingManager::RenderFrame()
 	// swap chain present
 
 	// TODO: we probasbly will have one command list per instance, no?
-	ID3D12CommandList* ppCommandLists[] = { m_commandList };
-
-	m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
 	if (FAILED(
 		m_commandQueue->Signal(m_fence[m_currentRenderTargetNumber], m_fenceValue[m_currentRenderTargetNumber])
@@ -217,6 +210,36 @@ int RenderingManager::RenderFrame()
 	))
 	{
 		return HandleD3DError();
+	}
+
+	return EXIT_SUCCESS;
+}
+
+int RenderingManager::RenderFrame()
+{
+	static bool resources_pushed = false;
+	if (!resources_pushed)
+	{
+		if (RunCommandList() == EXIT_SUCCESS)
+		{
+			resources_pushed = true;
+		}
+	}
+
+	// TODO: UPDATEsubresources!! We have to check here, did we do initial uploading resources!
+	if (WaitForPreviousFrame() != EXIT_SUCCESS)
+	{
+		return EXIT_FAILURE;
+	}
+
+	if (UpdatePipeline() != EXIT_SUCCESS)
+	{
+		return EXIT_FAILURE;
+	}
+
+	if (RunCommandList() != EXIT_SUCCESS)
+	{
+		return EXIT_FAILURE;
 	}
 
 	return EXIT_SUCCESS;
@@ -257,7 +280,7 @@ int RenderingManager::SubmitVertexBufferAndGetView(Vertex vArray[], D3D12_VERTEX
 	vBufferUploadHeap->SetName(L"Vertex Buffer Upload Resource Heap");
 
 	// store vertex buffer in upload heap
-	D3D12_SUBRESOURCE_DATA vertexData = {};
+	static D3D12_SUBRESOURCE_DATA vertexData = {};
 	vertexData.pData = reinterpret_cast<BYTE*>(vArray); // pointer to our vertex array
 	vertexData.RowPitch = vBufferSize; // size of all our triangle vertex data
 	vertexData.SlicePitch = vBufferSize; // also the size of our triangle vertex data
@@ -308,7 +331,7 @@ int RenderingManager::SubmitIndexBufferAndGetView(DWORD iArray[], D3D12_INDEX_BU
 	iBufferUploadHeap->SetName(L"Index Buffer Upload Resource Heap");
 
 	// store vertex buffer in upload heap
-	D3D12_SUBRESOURCE_DATA indexData = {};
+	static D3D12_SUBRESOURCE_DATA indexData = {};
 	indexData.pData = reinterpret_cast<BYTE*>(iArray); // pointer to our index array
 	indexData.RowPitch = iBufferSize; // size of all our index buffer
 	indexData.SlicePitch = iBufferSize; // also the size of our index buffer
