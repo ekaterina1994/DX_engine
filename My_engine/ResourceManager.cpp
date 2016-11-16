@@ -87,6 +87,8 @@ int ResourceManager::getMaterial(Model::Material & material)
 	DXGI_SAMPLE_DESC sampleDesc = {};
 	sampleDesc.Count = 1;
 	CD3DX12_RASTERIZER_DESC rastDesc(D3D12_DEFAULT);
+	rastDesc.CullMode = D3D12_CULL_MODE::D3D12_CULL_MODE_NONE;
+
 	//rastDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {}; // a structure to define a pso
@@ -194,7 +196,7 @@ int ResourceManager::getGeometry(Model::Geometry & geometry)
 		return EXIT_FAILURE;
 	}
 
-	if (g_ApplicationPtr->m_renderingManager->SubmitIndexBufferAndGetView(iArray, indexBufferView, numIndicies))
+	if (g_ApplicationPtr->m_renderingManager->SubmitIndexBufferAndGetView(iArray, sizeof(iArray),indexBufferView, numIndicies))
 	{
 		return EXIT_FAILURE;
 	}
@@ -272,8 +274,8 @@ int ResourceManager::getShaderEnv(D3D12_INPUT_LAYOUT_DESC& inputLayoutDesc, D3D1
 	// fill out an input layout description structure
 
 	// we can get the number of elements in an array by "sizeof(array) / sizeof(arrayElementType)"
-	inputLayoutDesc.NumElements = sizeof(inputLayout) / sizeof(D3D12_INPUT_ELEMENT_DESC);
-	inputLayoutDesc.pInputElementDescs = inputLayout;
+	inputLayoutDesc.NumElements = 0;// sizeof(inputLayout) / sizeof(D3D12_INPUT_ELEMENT_DESC);
+	inputLayoutDesc.pInputElementDescs = nullptr;// inputLayout;
 	return EXIT_SUCCESS;
 }
 

@@ -1,7 +1,8 @@
 struct VS_INPUT
 {
-	float4 pos : POSITION;
-	float4 color: COLOR;
+	//float4 pos : POSITION;
+	//float4 color: COLOR;
+	uint idx : SV_VertexID;
 };
 
 struct VS_OUTPUT
@@ -20,7 +21,8 @@ VS_OUTPUT main(VS_INPUT input)
 {
 	VS_OUTPUT output;
 //	output.pos = mul(input.pos, wvpMat);
-	output.pos = input.pos;
-	output.color = input.color;
+	float2 pos = float2((float)(input.idx & 1), (float)(input.idx >> 1)) * 2.0 - 1.0;
+	output.pos = float4(sign(pos), 0.0, 1.0);
+	output.color = 1.0;// input.color;
 	return output;
 }

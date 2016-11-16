@@ -14,6 +14,15 @@ RenderingManager::RenderingManager()
 
 int RenderingManager::Init()
 {
+	// enabling Debug layer
+	{
+		ID3D12Debug* debugController;
+		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
+		{
+			debugController->EnableDebugLayer();
+		}
+	}
+
 	if (D3DHelper_CreateDXGIFactory(m_dxgiFactory) == EXIT_FAILURE)
 	{
 		return EXIT_FAILURE;
@@ -132,7 +141,7 @@ int RenderingManager::UpdatePipeline()
 
 	//unPSO setup
 	m_commandList->RSSetViewports(1, &m_viewport);
-	m_commandList->RSSetScissorRects(1, &m_scissorRect);
+	//m_commandList->RSSetScissorRects(1, &m_scissorRect);
 	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	
@@ -158,8 +167,8 @@ int RenderingManager::UpdatePipeline()
 		m_commandList->SetPipelineState(material.m_pipelineState);
 		m_commandList->SetGraphicsRootSignature(material.m_root_signature);
 
-		m_commandList->IASetVertexBuffers(0, 1, &geometry.m_vertexBufferView);
-		m_commandList->IASetIndexBuffer(&geometry.m_indexBufferView);
+		//m_commandList->IASetVertexBuffers(0, 1, &geometry.m_vertexBufferView);
+		//m_commandList->IASetIndexBuffer(&geometry.m_indexBufferView);
 
 		// without constans buffer now
 		// later I plan to add nocstant buffer
@@ -167,7 +176,8 @@ int RenderingManager::UpdatePipeline()
 		// maybe it will be more generic step, I mean, we have to bind all resources, described inside rootsignature, not only constant buffer...
 		// m_commandList->SetGraphicsRootConstantBufferView(0, constantBufferUploadHeaps[m_currentRenderTargetNumber]->GetGPUVirtualAddress());
 
-		m_commandList->DrawIndexedInstanced(geometry.m_numIndices, 1, 0, 0, 0);
+		//m_commandList->DrawIndexedInstanced(geometry.m_numIndices, 1, 0, 0, 0);
+		m_commandList->DrawInstanced(4, 1, 0, 0);
 	}
 
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_currentRenderTargetNumber], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -217,15 +227,26 @@ int RenderingManager::RunCommandList()
 
 int RenderingManager::RenderFrame()
 {
+	UpdatePipeline();
+	RunCommandList();
+/*
 	static bool resources_pushed = false;
 	if (!resources_pushed)
 	{
+		HRESULT hr = m_commandList->Close();
+		if (FAILED(
+			hr
+		))
+		{
+			return HandleD3DError();
+		}
+
 		if (RunCommandList() == EXIT_SUCCESS)
 		{
 			resources_pushed = true;
 		}
 	}
-
+*/
 	// TODO: UPDATEsubresources!! We have to check here, did we do initial uploading resources!
 	if (WaitForPreviousFrame() != EXIT_SUCCESS)
 	{
@@ -296,16 +317,16 @@ int RenderingManager::SubmitVertexBufferAndGetView(Vertex vArray[], D3D12_VERTEX
 	VBV.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
 	VBV.StrideInBytes = sizeof(Vertex);
 	VBV.SizeInBytes = vBufferSize;
-	return 0;
+	return EXIT_SUCCESS;
 }
 
-int RenderingManager::SubmitIndexBufferAndGetView(DWORD iArray[], D3D12_INDEX_BUFFER_VIEW& IBV, int& numIndicies)
+int RenderingManager::SubmitIndexBufferAndGetView(DWORD iArray[], int size, D3D12_INDEX_BUFFER_VIEW& IBV, int& numIndicies)
 {
 	ID3D12Resource* indexBuffer; // TODO: make it mamber of rendering manager class, release it!!
 
-	int iBufferSize = sizeof(iArray);
+	int iBufferSize = size;
 
-	numIndicies = sizeof(iArray) / sizeof(DWORD);
+	numIndicies = size / sizeof(DWORD);
 
 	// create default heap to hold index buffer
 	m_device->CreateCommittedResource(
