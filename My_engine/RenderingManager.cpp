@@ -5,7 +5,7 @@
 #include "Application.h"
 
 
-const float RenderingManager::m_clearColor[] = { 0.0f, 1.0f, 0.0f, 1.0f };
+const float RenderingManager::m_clearColor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
 
 RenderingManager::RenderingManager()
 {
@@ -145,6 +145,10 @@ int RenderingManager::UpdatePipeline()
 	}
 	*/
 
+	static float fakeTime = 0.0f;
+	fakeTime += 0.0005f;
+	XMMATRIX matRotZ = XMMatrixRotationZ(fakeTime);
+
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//! https://msdn.microsoft.com/en-us/library/ms177202.aspx !
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -164,8 +168,8 @@ int RenderingManager::UpdatePipeline()
 
 		XMMATRIX matView = XMMatrixLookAtRH(XMLoadFloat3(&eyePos), XMLoadFloat3(&targetPos), XMLoadFloat3(&upVec));
 		XMMATRIX matProj = XMMatrixPerspectiveFovRH(XM_PIDIV4, 1.0f, 0.001f, 1000000.0f);
-		XMMATRIX matViewProj = XMMatrixMultiplyTranspose(matView, matProj);
-		m_commandList->SetGraphicsRoot32BitConstants(0, 16, &matViewProj, 0);
+		XMMATRIX matViewProj = XMMatrixMultiplyTranspose(XMMatrixMultiply(matRotZ, matView), matProj);
+		m_commandList->SetGraphicsRoot32BitConstants(0, 16, &matViewProj, 0); // more frequent it changes, the closer to root constants it should be (root constants < root descriptor < descriptor table, etc)
 		// without constans buffer now
 		// later I plan to add nocstant buffer
 		// TODO: implement constant buffers support
