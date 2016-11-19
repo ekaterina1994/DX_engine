@@ -116,20 +116,6 @@ int RenderingManager::HandleD3DError()
 
 int RenderingManager::UpdatePipeline()
 {
-	if (FAILED(
-		m_commandAllocator[m_currentRenderTargetNumber]->Reset()
-	))
-	{
-		/*return*/ HandleD3DError();
-	}
-
-	if (FAILED(
-		m_commandList->Reset(m_commandAllocator[m_currentRenderTargetNumber], nullptr)
-	))
-	{
-		/*return*/ HandleD3DError();
-	}
-
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_currentRenderTargetNumber], D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), m_currentRenderTargetNumber, m_rtvDescriptorSize);
@@ -199,7 +185,6 @@ int RenderingManager::RunCommandList()
 
 	m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
-
 	// TODO: create different functions for logic below
 	// Update pipeline (filling command list)
 	// Execute command lists
@@ -209,11 +194,31 @@ int RenderingManager::RunCommandList()
 	// TODO: we probasbly will have one command list per instance, no?
 
 	if (FAILED(
-		m_commandQueue->Signal(m_fence[m_currentRenderTargetNumber], m_fenceValue[m_currentRenderTargetNumber])
+		m_commandQueue->Signal(m_fence[m_currentRenderTargetNumber], ++m_fenceValue[m_currentRenderTargetNumber])
 	))
 	{
 		return HandleD3DError();
 	}
+
+	while (m_fence[m_currentRenderTargetNumber]->GetCompletedValue() != m_fenceValue[m_currentRenderTargetNumber])
+	{
+		// active waiting
+	}
+
+	if (FAILED(
+		m_commandAllocator[m_currentRenderTargetNumber]->Reset()
+	))
+	{
+		/*return*/ HandleD3DError();
+	}
+
+	if (FAILED(
+		m_commandList->Reset(m_commandAllocator[m_currentRenderTargetNumber], nullptr)
+	))
+	{
+		/*return*/ HandleD3DError();
+	}
+
 
 	if (FAILED(
 		m_swapChain->Present(0, 0)
@@ -222,6 +227,7 @@ int RenderingManager::RunCommandList()
 		return HandleD3DError();
 	}
 
+	m_currentRenderTargetNumber = m_swapChain->GetCurrentBackBufferIndex();
 	return EXIT_SUCCESS;
 }
 
@@ -248,20 +254,6 @@ int RenderingManager::RenderFrame()
 	}
 */
 	// TODO: UPDATEsubresources!! We have to check here, did we do initial uploading resources!
-	if (WaitForPreviousFrame() != EXIT_SUCCESS)
-	{
-		return EXIT_FAILURE;
-	}
-
-	if (UpdatePipeline() != EXIT_SUCCESS)
-	{
-		return EXIT_FAILURE;
-	}
-
-	if (RunCommandList() != EXIT_SUCCESS)
-	{
-		return EXIT_FAILURE;
-	}
 
 	return EXIT_SUCCESS;
 }
@@ -311,8 +303,22 @@ int RenderingManager::SubmitVertexBufferAndGetView(Vertex vArray[], D3D12_VERTEX
 	UpdateSubresources(m_commandList, vertexBuffer, vBufferUploadHeap, 0, 0, 1, &vertexData);
 
 	// transition the vertex buffer data from copy destination state to vertex buffer state
-	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+	ID3D12Fence* syncFence = nullptr;
+	m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&syncFence));
 
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+	ID3D12CommandList* commandLists[] = { m_commandList };
+	m_commandList->Close();
+	m_commandQueue->ExecuteCommandLists(1, commandLists);
+	m_commandQueue->Signal(syncFence, 1);
+
+	while (syncFence->GetCompletedValue() != 1)
+	{
+	}
+	syncFence->Release();
+
+	m_commandAllocator[0]->Reset();
+	m_commandList->Reset(m_commandAllocator[0], nullptr);
 
 	VBV.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
 	VBV.StrideInBytes = sizeof(Vertex);
@@ -361,7 +367,22 @@ int RenderingManager::SubmitIndexBufferAndGetView(DWORD iArray[], int size, D3D1
 	UpdateSubresources(m_commandList, indexBuffer, iBufferUploadHeap, 0, 0, 1, &indexData);
 
 	// transition the vertex buffer data from copy destination state to vertex buffer state
+	ID3D12Fence* syncFence = nullptr;
+	m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&syncFence));
+
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+	ID3D12CommandList* commandLists[] = { m_commandList };
+	m_commandList->Close();
+	m_commandQueue->ExecuteCommandLists(1, commandLists);
+	m_commandQueue->Signal(syncFence, 1);
+
+	while (syncFence->GetCompletedValue() != 1)
+	{
+	}
+	syncFence->Release();
+
+	m_commandAllocator[0]->Reset();
+	m_commandList->Reset(m_commandAllocator[0], nullptr);
 
 	IBV.BufferLocation = indexBuffer->GetGPUVirtualAddress();
 	IBV.Format = DXGI_FORMAT_R32_UINT; // 32-bit unsigned integer (this is what a dword is, double word, a word is 2 bytes)

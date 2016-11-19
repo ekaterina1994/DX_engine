@@ -20,8 +20,8 @@ public:
 	int Init(HINSTANCE hInstance, int ShowWnd);
 	int Run();
 	int Update();
-	int Render();
-	int IsRunning();
+	void Render(); // if Render fails, then everything is fucked up and you can't do anything. Don't check every Render() call. Better check stuff inside Render().
+	bool IsRunning(); // use C++, not C with classes. If the method's name starts with "Is" then it should return a boolean value in 99.9% cases.
 	int Stop();
 	int ClearAll();
 

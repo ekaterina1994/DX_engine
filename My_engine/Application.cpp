@@ -82,8 +82,8 @@ int Application::Init(HINSTANCE hInstance, int ShowWnd)
 
 int Application::Run()
 {
-	MSG msg;
-	ZeroMemory(&msg, sizeof(MSG)); 
+	MSG msg = {}; // zero-initialize this way is better than ZeroMemory()
+
 	while (m_isRunning)
 	{
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -110,15 +110,14 @@ int Application::Update()
 	return EXIT_SUCCESS;
 }
 
-int Application::Render()
+void Application::Render()
 {
 	m_renderingManager->RenderFrame();
-	return EXIT_SUCCESS;
 }
 
-int Application::IsRunning()
+bool Application::IsRunning()
 {
-	return m_isRunning ? EXIT_SUCCESS : EXIT_FAILURE;
+	return m_isRunning;
 }
 
 int Application::Stop()

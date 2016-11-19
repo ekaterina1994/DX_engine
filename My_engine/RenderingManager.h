@@ -58,6 +58,7 @@ private:
 	ID3D12DescriptorHeap*	m_dsvDescriptorHeap	= nullptr; 
 	ID3D12Resource*			m_renderTargets[m_frameBufferCount];
 	ID3D12CommandAllocator* m_commandAllocator[m_frameBufferCount];
+
 	ID3D12Fence*			m_fence[m_frameBufferCount];
 	HANDLE					m_fenceEvent;
 	UINT64					m_fenceValue[m_frameBufferCount];
