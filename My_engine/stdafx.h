@@ -4,8 +4,11 @@
 #define WIN32_LEAN_AND_MEAN    // Exclude rarely-used stuff from Windows headers.
 #endif
 
+#include <DirectXMath.h>
+using namespace DirectX;
+
 #include <stdlib.h>
-#include<iostream>
+#include <iostream>
 #include <tchar.h>
 #include <assert.h>
 using namespace std;

@@ -145,25 +145,35 @@ int RenderingManager::UpdatePipeline()
 	}
 	*/
 
-
-	for each (auto& model in g_ApplicationPtr->m_resourceManager->getScenePtr()->getModels())
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//! https://msdn.microsoft.com/en-us/library/ms177202.aspx !
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	for (auto& model : g_ApplicationPtr->m_resourceManager->getScenePtr()->getModels())
 	{
 		auto& material = model.second.m_material;
 		auto& geometry = model.second.m_geometry;
 		m_commandList->SetPipelineState(material.m_pipelineState);
 		m_commandList->SetGraphicsRootSignature(material.m_root_signature);
 
-		//m_commandList->IASetVertexBuffers(0, 1, &geometry.m_vertexBufferView);
-		//m_commandList->IASetIndexBuffer(&geometry.m_indexBufferView);
+		m_commandList->IASetVertexBuffers(0, 1, &geometry.m_vertexBufferView);
+		m_commandList->IASetIndexBuffer(&geometry.m_indexBufferView);
 
+		XMFLOAT3 eyePos{3.0f, 3.0f, 3.0f};
+		XMFLOAT3 targetPos{0.0f, 0.0f, 0.0f};
+		XMFLOAT3 upVec{0.0f, 0.0f, 1.0f};
+
+		XMMATRIX matView = XMMatrixLookAtRH(XMLoadFloat3(&eyePos), XMLoadFloat3(&targetPos), XMLoadFloat3(&upVec));
+		XMMATRIX matProj = XMMatrixPerspectiveFovRH(XM_PIDIV4, 1.0f, 0.001f, 1000000.0f);
+		XMMATRIX matViewProj = XMMatrixMultiplyTranspose(matView, matProj);
+		m_commandList->SetGraphicsRoot32BitConstants(0, 16, &matViewProj, 0);
 		// without constans buffer now
 		// later I plan to add nocstant buffer
 		// TODO: implement constant buffers support
 		// maybe it will be more generic step, I mean, we have to bind all resources, described inside rootsignature, not only constant buffer...
 		// m_commandList->SetGraphicsRootConstantBufferView(0, constantBufferUploadHeaps[m_currentRenderTargetNumber]->GetGPUVirtualAddress());
 
-		//m_commandList->DrawIndexedInstanced(geometry.m_numIndices, 1, 0, 0, 0);
-		m_commandList->DrawInstanced(4, 1, 0, 0);
+		m_commandList->DrawIndexedInstanced(geometry.m_numIndices, 1, 0, 0, 0);
+		//m_commandList->DrawInstanced(4, 1, 0, 0);
 	}
 
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_currentRenderTargetNumber], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -258,10 +268,10 @@ int RenderingManager::RenderFrame()
 	return EXIT_SUCCESS;
 }
 
-int RenderingManager::SubmitVertexBufferAndGetView(Vertex vArray[], D3D12_VERTEX_BUFFER_VIEW &VBV)
+int RenderingManager::SubmitVertexBufferAndGetView(const Vertex* vertices, size_t numVertices, D3D12_VERTEX_BUFFER_VIEW &VBV)
 {
 	ID3D12Resource* vertexBuffer;// TODO:should became member of this manager
-	int vBufferSize = sizeof(vArray);
+	int vBufferSize = sizeof(Vertex) * numVertices;
 
 	// create default heap
 	// default heap is memory on the GPU. Only the GPU has access to this memory
@@ -294,7 +304,7 @@ int RenderingManager::SubmitVertexBufferAndGetView(Vertex vArray[], D3D12_VERTEX
 
 	// store vertex buffer in upload heap
 	static D3D12_SUBRESOURCE_DATA vertexData = {};
-	vertexData.pData = reinterpret_cast<BYTE*>(vArray); // pointer to our vertex array
+	vertexData.pData = reinterpret_cast<const BYTE*>(vertices); // pointer to our vertex array
 	vertexData.RowPitch = vBufferSize; // size of all our triangle vertex data
 	vertexData.SlicePitch = vBufferSize; // also the size of our triangle vertex data
 

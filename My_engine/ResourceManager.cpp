@@ -55,8 +55,11 @@ int ResourceManager::getMaterial(Model::Material & material)
 
 	ID3D12Device* device = g_ApplicationPtr->m_renderingManager->getDevice();
 
-		CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-	rootSignatureDesc.Init(0, nullptr,//no root parameters
+	CD3DX12_ROOT_PARAMETER rootParameters[1];
+	rootParameters[0].InitAsConstants(16, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
+
+	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+	rootSignatureDesc.Init(_countof(rootParameters), rootParameters,//no root parameters
 		0,
 		nullptr,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
@@ -169,29 +172,29 @@ int ResourceManager::getGeometry(Model::Geometry & geometry)
 		0, 1, 2, // first triangle
 		0, 3, 1, // second triangle
 
-				 // left face
-				 4, 5, 6, // first triangle
-				 4, 7, 5, // second triangle
+		// left face
+		4, 5, 6, // first triangle
+		4, 7, 5, // second triangle
 
-						  // right face
-						  8, 9, 10, // first triangle
-						  8, 11, 9, // second triangle
+		// right face
+		8, 9, 10, // first triangle
+		8, 11, 9, // second triangle
 
-									// back face
-									12, 13, 14, // first triangle
-									12, 15, 13, // second triangle
+		// back face
+		12, 13, 14, // first triangle
+		12, 15, 13, // second triangle
 
-												// top face
-												16, 17, 18, // first triangle
-												16, 19, 17, // second triangle
+		// top face
+		16, 17, 18, // first triangle
+		16, 19, 17, // second triangle
 
-															// bottom face
-															20, 21, 22, // first triangle
-															20, 23, 21, // second triangle
+		// bottom face
+		20, 21, 22, // first triangle
+		20, 23, 21, // second triangle
 	};
 
 	
-	if (g_ApplicationPtr->m_renderingManager->SubmitVertexBufferAndGetView(vArray, vertexBufferView))
+	if (g_ApplicationPtr->m_renderingManager->SubmitVertexBufferAndGetView(vArray, _countof(vArray), vertexBufferView))
 	{
 		return EXIT_FAILURE;
 	}
@@ -274,8 +277,8 @@ int ResourceManager::getShaderEnv(D3D12_INPUT_LAYOUT_DESC& inputLayoutDesc, D3D1
 	// fill out an input layout description structure
 
 	// we can get the number of elements in an array by "sizeof(array) / sizeof(arrayElementType)"
-	inputLayoutDesc.NumElements = 0;// sizeof(inputLayout) / sizeof(D3D12_INPUT_ELEMENT_DESC);
-	inputLayoutDesc.pInputElementDescs = nullptr;// inputLayout;
+	inputLayoutDesc.NumElements = _countof(inputLayout);
+	inputLayoutDesc.pInputElementDescs = inputLayout;
 	return EXIT_SUCCESS;
 }
 

@@ -26,7 +26,7 @@ public:
 		return m_device;
 	}
 
-	int SubmitVertexBufferAndGetView(Vertex[], D3D12_VERTEX_BUFFER_VIEW&);
+	int SubmitVertexBufferAndGetView(const Vertex* vertices, size_t numVertices, D3D12_VERTEX_BUFFER_VIEW&);
 
 	int SubmitIndexBufferAndGetView(DWORD[], int, D3D12_INDEX_BUFFER_VIEW&, int&);
 	//setupResourcelistener();
