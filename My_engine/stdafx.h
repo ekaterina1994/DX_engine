@@ -11,5 +11,15 @@ using namespace DirectX;
 #include <iostream>
 #include <tchar.h>
 #include <assert.h>
+#include "Windows.h"
+
 using namespace std;
+
+inline void ThrowIfFailed(HRESULT hr)
+{
+	if (FAILED(hr))
+	{
+		throw;
+	}
+}
 

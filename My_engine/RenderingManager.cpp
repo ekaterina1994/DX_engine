@@ -156,28 +156,24 @@ int RenderingManager::UpdatePipeline()
 	{
 		auto& material = model.second.m_material;
 		auto& geometry = model.second.m_geometry;
+
 		m_commandList->SetPipelineState(material.m_pipelineState);
 		m_commandList->SetGraphicsRootSignature(material.m_root_signature);
 
 		m_commandList->IASetVertexBuffers(0, 1, &geometry.m_vertexBufferView);
 		m_commandList->IASetIndexBuffer(&geometry.m_indexBufferView);
 
-		XMFLOAT3 eyePos{3.0f, 3.0f, 3.0f};
+		XMFLOAT3 eyePos{3.0f, 3.0f, -3.0f};
 		XMFLOAT3 targetPos{0.0f, 0.0f, 0.0f};
 		XMFLOAT3 upVec{0.0f, 0.0f, 1.0f};
 
-		XMMATRIX matView = XMMatrixLookAtRH(XMLoadFloat3(&eyePos), XMLoadFloat3(&targetPos), XMLoadFloat3(&upVec));
-		XMMATRIX matProj = XMMatrixPerspectiveFovRH(XM_PIDIV4, 1.0f, 0.001f, 1000000.0f);
+		XMMATRIX matView = XMMatrixLookAtLH(XMLoadFloat3(&eyePos), XMLoadFloat3(&targetPos), XMLoadFloat3(&upVec));
+		XMMATRIX matProj = XMMatrixPerspectiveFovLH(XM_PIDIV4, 1.0f, 0.001f, 1000000.0f);
 		XMMATRIX matViewProj = XMMatrixMultiplyTranspose(XMMatrixMultiply(matRotZ, matView), matProj);
-		m_commandList->SetGraphicsRoot32BitConstants(0, 16, &matViewProj, 0); // more frequent it changes, the closer to root constants it should be (root constants < root descriptor < descriptor table, etc)
-		// without constans buffer now
-		// later I plan to add nocstant buffer
-		// TODO: implement constant buffers support
-		// maybe it will be more generic step, I mean, we have to bind all resources, described inside rootsignature, not only constant buffer...
-		// m_commandList->SetGraphicsRootConstantBufferView(0, constantBufferUploadHeaps[m_currentRenderTargetNumber]->GetGPUVirtualAddress());
+
+		m_commandList->SetGraphicsRoot32BitConstants(0, 16, &matViewProj, 0); 
 
 		m_commandList->DrawIndexedInstanced(geometry.m_numIndices, 1, 0, 0, 0);
-		//m_commandList->DrawInstanced(4, 1, 0, 0);
 	}
 
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_currentRenderTargetNumber], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -195,51 +191,25 @@ int RenderingManager::UpdatePipeline()
 
 int RenderingManager::RunCommandList()
 {
+	m_commandList->Close();
+
 	ID3D12CommandList* ppCommandLists[] = { m_commandList };
 
 	m_commandQueue->ExecuteCommandLists(_countof(ppCommandLists), ppCommandLists);
 
-	// TODO: create different functions for logic below
-	// Update pipeline (filling command list)
-	// Execute command lists
-	// signal to next frame
-	// swap chain present
-
-	// TODO: we probasbly will have one command list per instance, no?
-
-	if (FAILED(
-		m_commandQueue->Signal(m_fence[m_currentRenderTargetNumber], ++m_fenceValue[m_currentRenderTargetNumber])
-	))
-	{
-		return HandleD3DError();
-	}
+	ThrowIfFailed(m_commandQueue->Signal(m_fence[m_currentRenderTargetNumber], 
+		++m_fenceValue[m_currentRenderTargetNumber]));
 
 	while (m_fence[m_currentRenderTargetNumber]->GetCompletedValue() != m_fenceValue[m_currentRenderTargetNumber])
 	{
 		// active waiting
 	}
 
-	if (FAILED(
-		m_commandAllocator[m_currentRenderTargetNumber]->Reset()
-	))
-	{
-		/*return*/ HandleD3DError();
-	}
+	ThrowIfFailed(m_commandAllocator[m_currentRenderTargetNumber]->Reset());
 
-	if (FAILED(
-		m_commandList->Reset(m_commandAllocator[m_currentRenderTargetNumber], nullptr)
-	))
-	{
-		/*return*/ HandleD3DError();
-	}
+	ThrowIfFailed(m_commandList->Reset(m_commandAllocator[m_currentRenderTargetNumber], nullptr));
 
-
-	if (FAILED(
-		m_swapChain->Present(0, 0)
-	))
-	{
-		return HandleD3DError();
-	}
+	ThrowIfFailed(m_swapChain->Present(0, 0));
 
 	m_currentRenderTargetNumber = m_swapChain->GetCurrentBackBufferIndex();
 	return EXIT_SUCCESS;
@@ -248,54 +218,28 @@ int RenderingManager::RunCommandList()
 int RenderingManager::RenderFrame()
 {
 	UpdatePipeline();
-	RunCommandList();
-/*
-	static bool resources_pushed = false;
-	if (!resources_pushed)
-	{
-		HRESULT hr = m_commandList->Close();
-		if (FAILED(
-			hr
-		))
-		{
-			return HandleD3DError();
-		}
 
-		if (RunCommandList() == EXIT_SUCCESS)
-		{
-			resources_pushed = true;
-		}
-	}
-*/
-	// TODO: UPDATEsubresources!! We have to check here, did we do initial uploading resources!
+	RunCommandList();
 
 	return EXIT_SUCCESS;
 }
 
 int RenderingManager::SubmitVertexBufferAndGetView(const Vertex* vertices, size_t numVertices, D3D12_VERTEX_BUFFER_VIEW &VBV)
 {
-	ID3D12Resource* vertexBuffer;// TODO:should became member of this manager
+
 	int vBufferSize = sizeof(Vertex) * numVertices;
 
-	// create default heap
-	// default heap is memory on the GPU. Only the GPU has access to this memory
-	// To get data into this heap, we will have to upload the data using
-	// an upload heap
+
 	m_device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), // a default heap
-		D3D12_HEAP_FLAG_NONE, // no flags
-		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize), // resource description for a buffer
-		D3D12_RESOURCE_STATE_COPY_DEST, // we will start this heap in the copy destination state since we will copy data
-										// from the upload heap to this heap
-		nullptr, // optimized clear value must be null for this type of resource. used for render targets and depth/stencil buffers
-		IID_PPV_ARGS(&vertexBuffer));
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(vBufferSize),
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		nullptr,
+		IID_PPV_ARGS(&m_vertexBuffer));
+	
+	m_vertexBuffer->SetName(L"Vertex Buffer Resource Heap");
 
-	// we can give resource heaps a name so when we debug with the graphics debugger we know what resource we are looking at
-	vertexBuffer->SetName(L"Vertex Buffer Resource Heap");
-
-	// create upload heap
-	// upload heaps are used to upload data to the GPU. CPU can write to it, GPU can read from it
-	// We will upload the vertex buffer using this heap to the default heap
 	ID3D12Resource* vBufferUploadHeap;
 	m_device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // upload heap
@@ -314,27 +258,17 @@ int RenderingManager::SubmitVertexBufferAndGetView(const Vertex* vertices, size_
 
 										 // we are now creating a command with the command list to copy the data from
 										 // the upload heap to the default heap
-	UpdateSubresources(m_commandList, vertexBuffer, vBufferUploadHeap, 0, 0, 1, &vertexData);
+	UpdateSubresources(m_commandList, m_vertexBuffer, vBufferUploadHeap, 0, 0, 1, &vertexData);
 
 	// transition the vertex buffer data from copy destination state to vertex buffer state
 	ID3D12Fence* syncFence = nullptr;
 	m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&syncFence));
 
-	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(vertexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
-	ID3D12CommandList* commandLists[] = { m_commandList };
-	m_commandList->Close();
-	m_commandQueue->ExecuteCommandLists(1, commandLists);
-	m_commandQueue->Signal(syncFence, 1);
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_vertexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 
-	while (syncFence->GetCompletedValue() != 1)
-	{
-	}
-	syncFence->Release();
+	RunCommandList();
 
-	m_commandAllocator[0]->Reset();
-	m_commandList->Reset(m_commandAllocator[0], nullptr);
-
-	VBV.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
+	VBV.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
 	VBV.StrideInBytes = sizeof(Vertex);
 	VBV.SizeInBytes = vBufferSize;
 	return EXIT_SUCCESS;
@@ -342,64 +276,45 @@ int RenderingManager::SubmitVertexBufferAndGetView(const Vertex* vertices, size_
 
 int RenderingManager::SubmitIndexBufferAndGetView(DWORD iArray[], int size, D3D12_INDEX_BUFFER_VIEW& IBV, int& numIndicies)
 {
-	ID3D12Resource* indexBuffer; // TODO: make it mamber of rendering manager class, release it!!
-
 	int iBufferSize = size;
 
 	numIndicies = size / sizeof(DWORD);
 
-	// create default heap to hold index buffer
 	m_device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), // a default heap
-		D3D12_HEAP_FLAG_NONE, // no flags
-		&CD3DX12_RESOURCE_DESC::Buffer(iBufferSize), // resource description for a buffer
-		D3D12_RESOURCE_STATE_COPY_DEST, // start in the copy destination state
-		nullptr, // optimized clear value must be null for this type of resource
-		IID_PPV_ARGS(&indexBuffer));
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(iBufferSize),
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		nullptr,
+		IID_PPV_ARGS(&m_indexBuffer));
 
-	// we can give resource heaps a name so when we debug with the graphics debugger we know what resource we are looking at
-	indexBuffer->SetName(L"Index Buffer Resource Heap");
+	m_indexBuffer->SetName(L"Index Buffer Resource Heap");
 
-	// create upload heap to upload index buffer
 	ID3D12Resource* iBufferUploadHeap;
 	m_device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // upload heap
-		D3D12_HEAP_FLAG_NONE, // no flags
-		&CD3DX12_RESOURCE_DESC::Buffer(iBufferSize), // resource description for a buffer
-		D3D12_RESOURCE_STATE_GENERIC_READ, // GPU will read from this buffer and copy its contents to the default heap
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), 
+		D3D12_HEAP_FLAG_NONE,
+		&CD3DX12_RESOURCE_DESC::Buffer(iBufferSize),
+		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(&iBufferUploadHeap));
 	iBufferUploadHeap->SetName(L"Index Buffer Upload Resource Heap");
 
-	// store vertex buffer in upload heap
 	static D3D12_SUBRESOURCE_DATA indexData = {};
-	indexData.pData = reinterpret_cast<BYTE*>(iArray); // pointer to our index array
-	indexData.RowPitch = iBufferSize; // size of all our index buffer
-	indexData.SlicePitch = iBufferSize; // also the size of our index buffer
+	indexData.pData = reinterpret_cast<BYTE*>(iArray);
+	indexData.RowPitch = iBufferSize;
+	indexData.SlicePitch = iBufferSize;
+	UpdateSubresources(m_commandList, m_indexBuffer, iBufferUploadHeap, 0, 0, 1, &indexData);
 
-										// the upload heap to the default heap
-	UpdateSubresources(m_commandList, indexBuffer, iBufferUploadHeap, 0, 0, 1, &indexData);
-
-	// transition the vertex buffer data from copy destination state to vertex buffer state
 	ID3D12Fence* syncFence = nullptr;
 	m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&syncFence));
 
-	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
-	ID3D12CommandList* commandLists[] = { m_commandList };
-	m_commandList->Close();
-	m_commandQueue->ExecuteCommandLists(1, commandLists);
-	m_commandQueue->Signal(syncFence, 1);
+	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_indexBuffer, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
 
-	while (syncFence->GetCompletedValue() != 1)
-	{
-	}
-	syncFence->Release();
+	RunCommandList();
 
-	m_commandAllocator[0]->Reset();
-	m_commandList->Reset(m_commandAllocator[0], nullptr);
-
-	IBV.BufferLocation = indexBuffer->GetGPUVirtualAddress();
-	IBV.Format = DXGI_FORMAT_R32_UINT; // 32-bit unsigned integer (this is what a dword is, double word, a word is 2 bytes)
+	IBV.BufferLocation = m_indexBuffer->GetGPUVirtualAddress();
+	IBV.Format = DXGI_FORMAT_R32_UINT;
 	IBV.SizeInBytes = iBufferSize;
 	return 0;
 }
@@ -426,6 +341,7 @@ int RenderingManager::WaitForPreviousFrame()
 int RenderingManager::ClearAll()
 {
 	// TODO: clear me m_depthStencilBuffer
+	// todo release m_vertexBuffer and m_indexBuffer
 	return EXIT_SUCCESS;
 }
 

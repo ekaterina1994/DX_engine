@@ -65,6 +65,9 @@ private:
 	ID3D12GraphicsCommandList* m_commandList;
 	D3D12_VIEWPORT			m_viewport;
 	D3D12_RECT				m_scissorRect;
+
+	ID3D12Resource*			m_vertexBuffer;
+	ID3D12Resource*			m_indexBuffer;
 };
 
 
