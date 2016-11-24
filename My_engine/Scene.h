@@ -15,6 +15,8 @@ public:
 
 	int AddModel(string name, Model&& inModel);
 
+	int AddModel(string name, Model& inModel);
+
 	map<string, Model>& getModels() { return m_models; }
 
 	int ClearAll();

@@ -28,11 +28,18 @@ struct Model
 		XMFLOAT4	m_position;
 	};
 
-	Model(Material m, Geometry g, Position p)
+	Model(Material& m, Geometry& g, Position& p)
 	{
 		m_material = m;
 		m_geometry = g;
 		m_position = p;
+	}
+
+	Model(Model& in)
+	{
+		m_material = in.m_material;
+		m_position = in.m_position;
+		m_geometry = in.m_geometry;
 	}
 	
 	Material	m_material;

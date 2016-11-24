@@ -45,7 +45,7 @@ int ResourceManager::InitScene()
 	scene->AddModel("cube", { material, geometry, position });
 	*/
 
-	scene->AddModel("cube", createModelFromFile("cube.obj"));
+	scene->AddModel("teapot", createModelFromFile("teapot.obj"));
 
 	m_scene = scene;
 	return EXIT_SUCCESS;
@@ -54,58 +54,80 @@ int ResourceManager::InitScene()
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-Model && ResourceManager::createModelFromFile(string name)
+
+Model & ResourceManager::createModelFromFile(string name)
 {
-	Model::Material material;
+	static Model::Material material;
 	Model::Geometry geometry;
 	Model::Position position;
-	/*
-	std::string inputfile = "cornell_box.obj";
-tinyobj::attrib_t attrib;
-std::vector<tinyobj::shape_t> shapes;
-std::vector<tinyobj::material_t> materials;
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+	
+	std::string err;
+	bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, name.c_str());
+	
+	if (!err.empty()) { // `err` may contain warning message.
+		std::cerr << err << std::endl;
+	}
+	
+	if (!ret) {
+		exit(1);
+	}
 
-std::string err;
-bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, inputfile.c_str());
+	static std::vector<Vertex> vBuffer;
+	static std::vector<uint32_t> iBuffer;
+	uint32_t current_index = 0;
+	
+	// Loop over shapes
+	for (size_t s = 0; s < shapes.size(); s++) 
+	{
+		// Loop over faces(polygon)
+		size_t index_offset = 0;
+		for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) 
+		{
+			int fv = shapes[s].mesh.num_face_vertices[f];
+			
+			// Loop over vertices in the face.
+			for (size_t v = 0; v < fv; v++) 
+			{
+				// access to vertex
+				tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+				float vx = attrib.vertices[3*idx.vertex_index+0];
+				float vy = attrib.vertices[3*idx.vertex_index+1];
+				float vz = attrib.vertices[3*idx.vertex_index+2];
+				float nx=0, ny=0, nz=0;
+				if (idx.normal_index != -1)
+				{
+					nx = attrib.normals[3 * idx.normal_index + 0];
+					ny = attrib.normals[3 * idx.normal_index + 1];
+					nz = attrib.normals[3 * idx.normal_index + 2];
+				}
+				float tx = 0, ty = 0;
+				if (idx.texcoord_index != -1)
+				{
+					tx = attrib.texcoords[2 * idx.texcoord_index + 0];
+					ty = attrib.texcoords[2 * idx.texcoord_index + 1];
+				}
+				vBuffer.push_back({vx,vy,vz,nx,ny,nz,tx,ty});
+				iBuffer.push_back(current_index++);
+			}
+			index_offset += fv;
+			
+			// per-face material
+			shapes[s].mesh.material_ids[f];
+		}
+	}
 
-if (!err.empty()) { // `err` may contain warning message.
-  std::cerr << err << std::endl;
-}
+	getMaterial(material);
 
-if (!ret) {
-  exit(1);
-}
+	getGeometry(geometry, &vBuffer[0], vBuffer.size(),&iBuffer[0],iBuffer.size()*sizeof(uint32_t),iBuffer.size());
 
-// Loop over shapes
-for (size_t s = 0; s < shapes.size(); s++) {
-  // Loop over faces(polygon)
-  size_t index_offset = 0;
-  for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
-    int fv = shapes[s].mesh.num_face_vertices[f];
-
-    // Loop over vertices in the face.
-    for (size_t v = 0; v < fv; v++) {
-      // access to vertex
-      tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-      float vx = attrib.vertices[3*idx.vertex_index+0];
-      float vy = attrib.vertices[3*idx.vertex_index+1];
-      float vz = attrib.vertices[3*idx.vertex_index+2];
-      float nx = attrib.normals[3*idx.normal_index+0];
-      float ny = attrib.normals[3*idx.normal_index+1];
-      float nz = attrib.normals[3*idx.normal_index+2];
-      float tx = attrib.texcoords[2*idx.texcoord_index+0];
-      float ty = attrib.texcoords[2*idx.texcoord_index+1];
-    }
-    index_offset += fv;
-
-    // per-face material
-    shapes[s].mesh.material_ids[f];
-  }
-}
-	*/
-
-
-	return { material, geometry, position };
+	getPosition(position);
+	
+	static Model model = Model(material, geometry, position);
+	
+	return model;
 }
 
 int ResourceManager::getMaterial(Model::Material & material)
@@ -120,7 +142,7 @@ int ResourceManager::getMaterial(Model::Material & material)
 	rootParameters[0].InitAsConstants(16, 0, 0, D3D12_SHADER_VISIBILITY_VERTEX);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
-	rootSignatureDesc.Init(_countof(rootParameters), rootParameters,//no root parameters
+	rootSignatureDesc.Init(_countof(rootParameters), rootParameters,
 		0,
 		nullptr,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
@@ -184,12 +206,12 @@ int ResourceManager::getMaterial(Model::Material & material)
 	}
 }
 
-int ResourceManager::getGeometry(Model::Geometry & geometry)
+int ResourceManager::getGeometry(Model::Geometry & geometry, Vertex* vArray, int vNumVerticies, uint32_t* iArray, int iSize, 
+	int numIndicies)
 {
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView; 
 	D3D12_INDEX_BUFFER_VIEW indexBufferView;
-	int numIndicies;
-
+	/*
 	Vertex vArray[] = {
 		// front face
 		{ -0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f },
@@ -254,13 +276,22 @@ int ResourceManager::getGeometry(Model::Geometry & geometry)
 		20, 23, 21, // second triangle
 	};
 
-	
 	if (g_ApplicationPtr->m_renderingManager->SubmitVertexBufferAndGetView(vArray, _countof(vArray), vertexBufferView))
 	{
 		return EXIT_FAILURE;
 	}
 
 	if (g_ApplicationPtr->m_renderingManager->SubmitIndexBufferAndGetView(iArray, sizeof(iArray),indexBufferView, numIndicies))
+	{
+		return EXIT_FAILURE;
+	}*/
+
+	if (g_ApplicationPtr->m_renderingManager->SubmitVertexBufferAndGetView(vArray, vNumVerticies, vertexBufferView))
+	{
+		return EXIT_FAILURE;
+	}
+
+	if (g_ApplicationPtr->m_renderingManager->SubmitIndexBufferAndGetView(iArray, iSize, indexBufferView, numIndicies))
 	{
 		return EXIT_FAILURE;
 	}
@@ -332,7 +363,8 @@ int ResourceManager::getShaderEnv(D3D12_INPUT_LAYOUT_DESC& inputLayoutDesc, D3D1
 	static D3D12_INPUT_ELEMENT_DESC inputLayout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
 	// fill out an input layout description structure

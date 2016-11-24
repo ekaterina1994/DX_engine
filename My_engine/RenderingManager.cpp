@@ -163,12 +163,12 @@ int RenderingManager::UpdatePipeline()
 		m_commandList->IASetVertexBuffers(0, 1, &geometry.m_vertexBufferView);
 		m_commandList->IASetIndexBuffer(&geometry.m_indexBufferView);
 
-		XMFLOAT3 eyePos{3.0f, 3.0f, -3.0f};
+		XMFLOAT3 eyePos{3.0f, 3.0f, -300.0f};
 		XMFLOAT3 targetPos{0.0f, 0.0f, 0.0f};
 		XMFLOAT3 upVec{0.0f, 0.0f, 1.0f};
 
-		XMMATRIX matView = XMMatrixLookAtLH(XMLoadFloat3(&eyePos), XMLoadFloat3(&targetPos), XMLoadFloat3(&upVec));
-		XMMATRIX matProj = XMMatrixPerspectiveFovLH(XM_PIDIV4, 1.0f, 0.001f, 1000000.0f);
+		XMMATRIX matView = XMMatrixLookAtRH(XMLoadFloat3(&eyePos), XMLoadFloat3(&targetPos), XMLoadFloat3(&upVec));
+		XMMATRIX matProj = XMMatrixPerspectiveFovRH(XM_PIDIV4, 1.0f, 0.001f, 1000000.0f);
 		XMMATRIX matViewProj = XMMatrixMultiplyTranspose(XMMatrixMultiply(matRotZ, matView), matProj);
 
 		m_commandList->SetGraphicsRoot32BitConstants(0, 16, &matViewProj, 0); 
@@ -274,11 +274,11 @@ int RenderingManager::SubmitVertexBufferAndGetView(const Vertex* vertices, size_
 	return EXIT_SUCCESS;
 }
 
-int RenderingManager::SubmitIndexBufferAndGetView(DWORD iArray[], int size, D3D12_INDEX_BUFFER_VIEW& IBV, int& numIndicies)
+int RenderingManager::SubmitIndexBufferAndGetView(uint32_t* iArray, int size, D3D12_INDEX_BUFFER_VIEW& IBV, int& numIndicies)
 {
 	int iBufferSize = size;
 
-	numIndicies = size / sizeof(DWORD);
+//	numIndicies = size / sizeof(DWORD);
 
 	m_device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),

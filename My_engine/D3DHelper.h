@@ -11,9 +11,13 @@
 using namespace DirectX;
 
 struct Vertex {
-	Vertex(float x, float y, float z, float r, float g, float b, float a) : pos(x, y, z), color(r, g, b, a) {}
-	XMFLOAT3 pos;
-	XMFLOAT4 color;
+
+	Vertex(float px, float py, float pz, float nx, float ny, float nz, float u, float v) :
+		position(px, py, pz), normal(nx, ny, nz), texCoord(u,v) {}
+
+	XMFLOAT3 position;
+	XMFLOAT3 normal;
+	XMFLOAT2 texCoord;
 };
 
 // Helper functions

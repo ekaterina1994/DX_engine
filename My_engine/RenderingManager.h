@@ -28,7 +28,7 @@ public:
 
 	int SubmitVertexBufferAndGetView(const Vertex* vertices, size_t numVertices, D3D12_VERTEX_BUFFER_VIEW&);
 
-	int SubmitIndexBufferAndGetView(DWORD[], int, D3D12_INDEX_BUFFER_VIEW&, int&);
+	int SubmitIndexBufferAndGetView(uint32_t*, int, D3D12_INDEX_BUFFER_VIEW&, int&);
 	//setupResourcelistener();
 
 
