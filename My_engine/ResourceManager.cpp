@@ -46,6 +46,7 @@ int ResourceManager::InitScene()
 	*/
 
 	scene->AddModel("teapot", createModelFromFile("teapot.obj"));
+//	scene->AddModel("cube", createModelFromFile("cube.obj"));
 
 	m_scene = scene;
 	return EXIT_SUCCESS;
@@ -206,7 +207,7 @@ int ResourceManager::getMaterial(Model::Material & material)
 	}
 }
 
-int ResourceManager::getGeometry(Model::Geometry & geometry, Vertex* vArray, int vNumVerticies, uint32_t* iArray, int iSize, 
+int ResourceManager::getGeometry(Model::Geometry & geometry, Vertex* vArray, int vNumVerticies, uint32_t* iArray, int iSize,
 	int numIndicies)
 {
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView; 
@@ -364,7 +365,7 @@ int ResourceManager::getShaderEnv(D3D12_INPUT_LAYOUT_DESC& inputLayoutDesc, D3D1
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
 	// fill out an input layout description structure
