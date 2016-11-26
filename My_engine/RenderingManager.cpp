@@ -168,7 +168,7 @@ int RenderingManager::UpdatePipeline()
 		XMFLOAT3 upVec{0.0f, 0.0f, 1.0f};
 
 		XMMATRIX matView = XMMatrixLookAtRH(XMLoadFloat3(&eyePos), XMLoadFloat3(&targetPos), XMLoadFloat3(&upVec));
-		XMMATRIX matProj = XMMatrixPerspectiveFovRH(XM_PIDIV4, 1.0f, 0.001f, 1000000.0f);
+		XMMATRIX matProj = XMMatrixPerspectiveFovRH(XM_PIDIV4, 1.0f, 0.1f, 1000000.0f);
 		XMMATRIX matViewProj = XMMatrixMultiplyTranspose(XMMatrixMultiply(matRotZ, matView), matProj);
 
 		m_commandList->SetGraphicsRoot32BitConstants(0, 16, &matViewProj, 0); 
@@ -177,21 +177,19 @@ int RenderingManager::UpdatePipeline()
 	}
 
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_currentRenderTargetNumber], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-	HRESULT hr;
-	hr = m_commandList->Close();
-	if (FAILED(
-		hr
-	))
-	{
-		return HandleD3DError();
-	}
 
 	return EXIT_SUCCESS;
 }
 
 int RenderingManager::RunCommandList()
 {
-	m_commandList->Close();
+	HRESULT hr = m_commandList->Close();
+	if (FAILED(
+		hr
+	))
+	{
+		return HandleD3DError();
+	}
 
 	ID3D12CommandList* ppCommandLists[] = { m_commandList };
 
