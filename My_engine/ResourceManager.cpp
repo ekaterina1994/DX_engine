@@ -110,7 +110,7 @@ Model & ResourceManager::createModelFromFile(string name)
 					tx = attrib.texcoords[2 * idx.texcoord_index + 0];
 					ty = attrib.texcoords[2 * idx.texcoord_index + 1];
 				}
-				vBuffer.push_back({vx,vy,vz,nx,ny,nz,tx,ty});
+				vBuffer.push_back({vx,vy,vz,1.0,nx,ny,nz,1.0,tx,ty});
 				iBuffer.push_back(current_index++);
 			}
 			index_offset += fv;
@@ -363,9 +363,9 @@ int ResourceManager::getShaderEnv(D3D12_INPUT_LAYOUT_DESC& inputLayoutDesc, D3D1
 
 	static D3D12_INPUT_ELEMENT_DESC inputLayout[] =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
 	// fill out an input layout description structure

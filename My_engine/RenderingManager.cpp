@@ -163,7 +163,7 @@ int RenderingManager::UpdatePipeline()
 		m_commandList->IASetVertexBuffers(0, 1, &geometry.m_vertexBufferView);
 		m_commandList->IASetIndexBuffer(&geometry.m_indexBufferView);
 
-		XMFLOAT3 eyePos{3.0f, 3.0f, -300.0f};
+		XMFLOAT3 eyePos{300.0f, 300.0f, -300.0f};
 		XMFLOAT3 targetPos{0.0f, 0.0f, 0.0f};
 		XMFLOAT3 upVec{0.0f, 0.0f, 1.0f};
 
