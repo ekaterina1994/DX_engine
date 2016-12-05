@@ -172,6 +172,7 @@
     <ClInclude Include="RenderingManager.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TestScene01.h" />
     <ClInclude Include="tiny_obj_loader.h" />
     <ClInclude Include="UIManager.h" />
   </ItemGroup>

@@ -21,35 +21,35 @@ Application::Application()
 
 int Application::InitManagers(HINSTANCE hInstance, int ShowWnd)
 {
-	int initialization_status = EXIT_SUCCESS;
+	int initialization_status = OK;
 	
 	if (!m_uiManager)
 	{
 		m_uiManager = new UIManager();
-		if (m_uiManager->Init(hInstance, ShowWnd) == EXIT_FAILURE)
+		if (m_uiManager->Init(hInstance, ShowWnd) == FAIL)
 		{
 			OutputDebugString(L"UIManager initialization failed!");
-			initialization_status = EXIT_FAILURE;
+			initialization_status = FAIL;
 		}
 	}
 
 	if (!m_renderingManager)
 	{
 		m_renderingManager = new RenderingManager();
-		if (m_renderingManager->Init() == EXIT_FAILURE)
+		if (m_renderingManager->Init() == FAIL)
 		{
 			OutputDebugString(L"RenderingManager initialization failed!");
-			initialization_status = EXIT_FAILURE;
+			initialization_status = FAIL;
 		}
 	}
 
 	if (!m_resourceManager)
 	{
 		m_resourceManager = new ResourceManager();
-		if (m_resourceManager->Init() == EXIT_FAILURE)
+		if (m_resourceManager->Init() == FAIL)
 		{
 			OutputDebugString(L"ResourceManager initialization failed!");
-			initialization_status = EXIT_FAILURE;
+			initialization_status = FAIL;
 		}
 	}
 
@@ -63,18 +63,18 @@ int Application::InitScene()
 
 int Application::Init(HINSTANCE hInstance, int ShowWnd)
 {
-	int initialization_status = EXIT_SUCCESS;
+	int initialization_status = OK;
 
-	if (InitManagers(hInstance, ShowWnd) == EXIT_FAILURE)
+	if (InitManagers(hInstance, ShowWnd) == FAIL)
 	{
 		OutputDebugString(L"Managers initialization failed!");
-		initialization_status = EXIT_FAILURE;
+		initialization_status = FAIL;
 	}
 
-	if (InitScene() == EXIT_FAILURE)
+	if (InitScene() == FAIL)
 	{
 		OutputDebugString(L"Models initialization failed!");
-		initialization_status = EXIT_FAILURE;
+		initialization_status = FAIL;
 	}	
 
 	return initialization_status;
@@ -100,14 +100,14 @@ int Application::Run()
 			Render(); // execute the command queue (rendering the scene is the result of the gpu executing the command lists)
 		}
 	}
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 
 int Application::Update()
 {
 	m_resourceManager->Update();
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 void Application::Render()
@@ -123,7 +123,7 @@ bool Application::IsRunning()
 int Application::Stop()
 {
 	m_isRunning = false;
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int Application::ClearAll()
@@ -146,5 +146,5 @@ int Application::ClearAll()
 		delete m_uiManager;
 	}
 
-	return EXIT_SUCCESS;
+	return OK;
 }

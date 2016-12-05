@@ -2,7 +2,6 @@
 #include "stdafx.h"
 #include "Model.h"
 
-#define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
 int ConvertGeomentry(	string objFile,
@@ -24,5 +23,5 @@ int ConvertGeomentry(	string objFile,
 			indexBuffer->push_back(indices.vertex_index);
 		}
 	}*/
-	return EXIT_SUCCESS;
+	return OK;
 }

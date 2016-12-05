@@ -24,7 +24,7 @@ public:
 	bool IsRunning(); // use C++, not C with classes. If the method's name starts with "Is" then it should return a boolean value in 99.9% cases.
 	int Stop();
 	int ClearAll();
-
+	RenderingManager& GetRenderingManager() { return *m_renderingManager; } // usually you do this and not friend classes. It's okay.
 private:
 	bool m_isRunning;
 

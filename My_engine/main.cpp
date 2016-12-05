@@ -9,20 +9,20 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	int nShowCmd)
 {
 	Application* MainApp = new Application();
-	if (MainApp->Init(hInstance, nShowCmd) == EXIT_FAILURE)
+	if (MainApp->Init(hInstance, nShowCmd) == FAIL)
 	{
 		delete MainApp;
-		return EXIT_FAILURE;
+		return FAIL;
 	}
-	if (MainApp->Run() == EXIT_FAILURE)
+	if (MainApp->Run() == FAIL)
 	{
 		delete MainApp;
-		return EXIT_FAILURE;
+		return FAIL;
 	}
-	if (MainApp->ClearAll() == EXIT_FAILURE)
+	if (MainApp->ClearAll() == FAIL)
 	{
 		delete MainApp;
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
 	delete MainApp;

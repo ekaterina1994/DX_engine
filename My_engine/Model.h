@@ -41,6 +41,11 @@ struct Model
 		m_position = in.m_position;
 		m_geometry = in.m_geometry;
 	}
+
+	Model()
+	{
+
+	}
 	
 	Material	m_material;
 	Geometry	m_geometry;

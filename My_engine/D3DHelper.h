@@ -8,6 +8,8 @@
 #include "d3dx12.h"
 #include <string>
 #include "UIManager.h"
+#include "stdafx.h"
+
 using namespace DirectX;
 
 struct Vertex {

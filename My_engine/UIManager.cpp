@@ -53,8 +53,8 @@ int UIManager::Init(HINSTANCE hInstance, int ShowWnd)
 	}
 	else
 	{
-		m_width		= 400;
-		m_height	= 400;
+		m_width		= 600;
+		m_height	= 500;
 	}
 
 	WNDCLASSEX wc;
@@ -105,7 +105,7 @@ int UIManager::Init(HINSTANCE hInstance, int ShowWnd)
 	ShowWindow(m_hwnd, ShowWnd);
 	UpdateWindow(m_hwnd);
 
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 
@@ -131,5 +131,5 @@ bool UIManager::is_fullScreen()
 
 int UIManager::ClearAll()
 {
-	return EXIT_SUCCESS;
+	return OK;
 }

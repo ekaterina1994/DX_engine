@@ -23,82 +23,82 @@ int RenderingManager::Init()
 		}
 	}
 
-	if (D3DHelper_CreateDXGIFactory(m_dxgiFactory) == EXIT_FAILURE)
+	if (D3DHelper_CreateDXGIFactory(m_dxgiFactory) == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	if (D3DHelper_CreateDevice(m_dxgiFactory, m_device) == EXIT_FAILURE)
+	if (D3DHelper_CreateDevice(m_dxgiFactory, m_device) == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	if (D3DHelper_CreateCommandQueue(m_dxgiFactory, m_device, m_commandQueue) == EXIT_FAILURE)
+	if (D3DHelper_CreateCommandQueue(m_dxgiFactory, m_device, m_commandQueue) == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	if (D3DHelper_CreateSwapChain(g_ApplicationPtr->m_uiManager, m_dxgiFactory, m_commandQueue, m_frameBufferCount, m_swapChain) == EXIT_FAILURE)
+	if (D3DHelper_CreateSwapChain(g_ApplicationPtr->m_uiManager, m_dxgiFactory, m_commandQueue, m_frameBufferCount, m_swapChain) == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	if (D3DHelper_createRTVDescriptorHeap(m_device, m_frameBufferCount, m_rtvDescriptorHeap) == EXIT_FAILURE)
+	if (D3DHelper_createRTVDescriptorHeap(m_device, m_frameBufferCount, m_rtvDescriptorHeap) == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
 	m_rtvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	if (D3DHelper_createDSVDescriptorHeap(m_device, m_depthStencilBuffer, g_ApplicationPtr->m_uiManager->getWidth(), g_ApplicationPtr->m_uiManager->getHeight(), m_dsvDescriptorHeap) == EXIT_FAILURE)
+	if (D3DHelper_createDSVDescriptorHeap(m_device, m_depthStencilBuffer, g_ApplicationPtr->m_uiManager->getWidth(), g_ApplicationPtr->m_uiManager->getHeight(), m_dsvDescriptorHeap) == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	if (D3DHelper_createViewportAndScissorRect(g_ApplicationPtr->m_uiManager->getWidth(), g_ApplicationPtr->m_uiManager->getHeight(), m_viewport, m_scissorRect) == EXIT_FAILURE)
+	if (D3DHelper_createViewportAndScissorRect(g_ApplicationPtr->m_uiManager->getWidth(), g_ApplicationPtr->m_uiManager->getHeight(), m_viewport, m_scissorRect) == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 	
-	if (D3DHelper_createRenderTargets(m_device, m_frameBufferCount, m_rtvDescriptorHeap, m_swapChain, m_renderTargets) == EXIT_FAILURE)
+	if (D3DHelper_createRenderTargets(m_device, m_frameBufferCount, m_rtvDescriptorHeap, m_swapChain, m_renderTargets) == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	if (D3DHelper_createCommandAllocator(m_device, m_frameBufferCount, m_commandAllocator) == EXIT_FAILURE)
+	if (D3DHelper_createCommandAllocator(m_device, m_frameBufferCount, m_commandAllocator) == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
 	if (FAILED(
 		m_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_commandAllocator[m_currentRenderTargetNumber], NULL, IID_PPV_ARGS(&m_commandList))
 	))
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	if (D3DHelper_createFencesAndFenceEvent(m_device,m_frameBufferCount,m_fence, m_fenceEvent, m_fenceValue) == EXIT_FAILURE)
+	if (D3DHelper_createFencesAndFenceEvent(m_device,m_frameBufferCount,m_fence, m_fenceEvent, m_fenceValue) == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
 	/*
-	if (D3DHelper_createRootSignature(m_device, m_rootSignature) == EXIT_FAILURE)
+	if (D3DHelper_createRootSignature(m_device, m_rootSignature) == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	if (D3dHelper_createShaderByteCode(m_vertexShaderBytecode, L"VertexShader.hlsl", "vs_5_0") == EXIT_FAILURE)
+	if (D3dHelper_createShaderByteCode(m_vertexShaderBytecode, L"VertexShader.hlsl", "vs_5_0") == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	if (D3dHelper_createShaderByteCode(m_vertexShaderBytecode, L"PixelShader.hlsl", "ps_5_0") == EXIT_FAILURE)
+	if (D3dHelper_createShaderByteCode(m_vertexShaderBytecode, L"PixelShader.hlsl", "ps_5_0") == FAIL)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 	*/
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int RenderingManager::HandleD3DError()
@@ -111,7 +111,7 @@ int RenderingManager::HandleD3DError()
 	//assert(false);
 
 	OutputDebugString(L"D3D ERROR!");
-	return EXIT_FAILURE;
+	return FAIL;
 }
 
 int RenderingManager::UpdatePipeline()
@@ -163,7 +163,9 @@ int RenderingManager::UpdatePipeline()
 		m_commandList->IASetVertexBuffers(0, 1, &geometry.m_vertexBufferView);
 		m_commandList->IASetIndexBuffer(&geometry.m_indexBufferView);
 
-		XMFLOAT3 eyePos{300.0f, 300.0f, -300.0f};
+		static float y_pos = 1.0f;
+		y_pos += float(0.005);
+		XMFLOAT3 eyePos{ 10.0f, y_pos, 15.0f};
 		XMFLOAT3 targetPos{0.0f, 0.0f, 0.0f};
 		XMFLOAT3 upVec{0.0f, 0.0f, 1.0f};
 
@@ -178,7 +180,7 @@ int RenderingManager::UpdatePipeline()
 
 	m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_renderTargets[m_currentRenderTargetNumber], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int RenderingManager::RunCommandList()
@@ -210,7 +212,7 @@ int RenderingManager::RunCommandList()
 	ThrowIfFailed(m_swapChain->Present(0, 0));
 
 	m_currentRenderTargetNumber = m_swapChain->GetCurrentBackBufferIndex();
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int RenderingManager::RenderFrame()
@@ -219,14 +221,12 @@ int RenderingManager::RenderFrame()
 
 	RunCommandList();
 
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int RenderingManager::SubmitVertexBufferAndGetView(const Vertex* vertices, size_t numVertices, D3D12_VERTEX_BUFFER_VIEW &VBV)
 {
-
-	int vBufferSize = sizeof(Vertex) * numVertices;
-
+	int vBufferSize = static_cast<int>(sizeof(Vertex) * numVertices);
 
 	m_device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
@@ -269,7 +269,7 @@ int RenderingManager::SubmitVertexBufferAndGetView(const Vertex* vertices, size_
 	VBV.BufferLocation = m_vertexBuffer->GetGPUVirtualAddress();
 	VBV.StrideInBytes = sizeof(Vertex);
 	VBV.SizeInBytes = vBufferSize;
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int RenderingManager::SubmitIndexBufferAndGetView(uint32_t* iArray, int size, D3D12_INDEX_BUFFER_VIEW& IBV, int& numIndicies)
@@ -319,7 +319,7 @@ int RenderingManager::SubmitIndexBufferAndGetView(uint32_t* iArray, int size, D3
 
 int RenderingManager::WaitForPreviousFrame()
 {
-	int status = EXIT_SUCCESS;
+	int status = OK;
 	m_currentRenderTargetNumber = m_swapChain->GetCurrentBackBufferIndex();
 	if (m_fence[m_currentRenderTargetNumber]->GetCompletedValue() < m_fenceValue[m_currentRenderTargetNumber])
 	{
@@ -328,7 +328,7 @@ int RenderingManager::WaitForPreviousFrame()
 		))
 		{
 			g_ApplicationPtr->Stop();
-			status = EXIT_FAILURE;
+			status = FAIL;
 		}
 		WaitForSingleObject(m_fenceEvent, INFINITE);
 	}
@@ -340,6 +340,6 @@ int RenderingManager::ClearAll()
 {
 	// TODO: clear me m_depthStencilBuffer
 	// todo release m_vertexBuffer and m_indexBuffer
-	return EXIT_SUCCESS;
+	return OK;
 }
 

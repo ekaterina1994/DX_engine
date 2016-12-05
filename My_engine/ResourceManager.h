@@ -7,6 +7,8 @@
 
 #include <string>
 
+class Scene;
+
 class ResourceManager
 {
 public:
@@ -17,6 +19,7 @@ public:
 	int ClearAll();
 	int InitScene();
 	Scene* getScenePtr() { return m_scene; }
+
 private:
 	Scene*	m_scene;
 	int getMaterial(Model::Material& material); 

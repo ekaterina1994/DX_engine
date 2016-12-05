@@ -8,10 +8,10 @@ int D3DHelper_CreateDXGIFactory(IDXGIFactory4*& dxgiFactory)
 	hr = CreateDXGIFactory1(IID_PPV_ARGS(&dxgiFactory));
 	if (FAILED(hr))
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int D3DHelper_CreateDevice(IDXGIFactory4*& dxgiFactory, ID3D12Device*& device)
@@ -49,7 +49,7 @@ int D3DHelper_CreateDevice(IDXGIFactory4*& dxgiFactory, ID3D12Device*& device)
 
 	if (!adapterFound)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
 	// Create the device
@@ -60,10 +60,10 @@ int D3DHelper_CreateDevice(IDXGIFactory4*& dxgiFactory, ID3D12Device*& device)
 	);
 	if (FAILED(hr))
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int D3DHelper_CreateCommandQueue(IDXGIFactory4*& dxgiFactory, ID3D12Device*& device, ID3D12CommandQueue*& commandQueue)
@@ -77,10 +77,10 @@ int D3DHelper_CreateCommandQueue(IDXGIFactory4*& dxgiFactory, ID3D12Device*& dev
 	hr = device->CreateCommandQueue(&cqDesc, IID_PPV_ARGS(&commandQueue)); // create the command queue
 	if (FAILED(hr))
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int D3DHelper_CreateSwapChain(	UIManager*& uiManager, 
@@ -118,7 +118,7 @@ int D3DHelper_CreateSwapChain(	UIManager*& uiManager,
 
 	swapchain = static_cast<IDXGISwapChain3*>(tempSwapChain);
 
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int D3DHelper_createRTVDescriptorHeap(ID3D12Device*& device, int frameBufferCount, ID3D12DescriptorHeap*& rtvDescriptorHeap)
@@ -135,10 +135,10 @@ int D3DHelper_createRTVDescriptorHeap(ID3D12Device*& device, int frameBufferCoun
 	hr = device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap));
 	if (FAILED(hr))
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int D3DHelper_createViewportAndScissorRect(int Width, int Height, D3D12_VIEWPORT& viewport, D3D12_RECT& scissorRect)
@@ -146,8 +146,8 @@ int D3DHelper_createViewportAndScissorRect(int Width, int Height, D3D12_VIEWPORT
 	// Fill out the Viewport
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = Width;
-	viewport.Height = Height;
+	viewport.Width = static_cast<float>(Width);
+	viewport.Height = static_cast<float>(Height);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 
@@ -156,7 +156,7 @@ int D3DHelper_createViewportAndScissorRect(int Width, int Height, D3D12_VIEWPORT
 	scissorRect.top = 0;
 	scissorRect.right = Width;
 	scissorRect.bottom = Height;
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int D3DHelper_createDSVDescriptorHeap(ID3D12Device*& device, ID3D12Resource*& depthStencilBuffer, int Width, int Height, ID3D12DescriptorHeap*& dsvDescriptorHeap)
@@ -169,7 +169,7 @@ int D3DHelper_createDSVDescriptorHeap(ID3D12Device*& device, ID3D12Resource*& de
 		device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvDescriptorHeap))
 	))
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
 	D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
@@ -193,7 +193,7 @@ int D3DHelper_createDSVDescriptorHeap(ID3D12Device*& device, ID3D12Resource*& de
 	dsvDescriptorHeap->SetName(L"Depth/Stencil Resource Heap");
 
 	device->CreateDepthStencilView(depthStencilBuffer, &depthStencilDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int D3DHelper_createRenderTargets(	ID3D12Device*& device, 
@@ -221,7 +221,7 @@ int D3DHelper_createRenderTargets(	ID3D12Device*& device,
 		hr = swapchain->GetBuffer(i, IID_PPV_ARGS(&renderTargets[i]));
 		if (FAILED(hr))
 		{
-			return EXIT_FAILURE;
+			return FAIL;
 		}
 
 		// the we "create" a render target view which binds the swap chain buffer (ID3D12Resource[n]) to the rtv handle
@@ -231,7 +231,7 @@ int D3DHelper_createRenderTargets(	ID3D12Device*& device,
 		rtvHandle.Offset(1, rtvDescriptorSize);
 	}
 
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int D3DHelper_createCommandAllocator(ID3D12Device*& device, int frameBufferCount, ID3D12CommandAllocator* commandAllocator[])
@@ -242,11 +242,11 @@ int D3DHelper_createCommandAllocator(ID3D12Device*& device, int frameBufferCount
 		hr = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&commandAllocator[i]));
 		if (FAILED(hr))
 		{
-			return EXIT_FAILURE;
+			return FAIL;
 		}
 	}
 
-	return EXIT_SUCCESS;
+	return OK;
 }
 int D3DHelper_createFencesAndFenceEvent(ID3D12Device*& device,
 	int frameBufferCount,
@@ -261,7 +261,7 @@ int D3DHelper_createFencesAndFenceEvent(ID3D12Device*& device,
 		hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence[i]));
 		if (FAILED(hr))
 		{
-			return EXIT_FAILURE;
+			return FAIL;
 		}
 		fenceValue[i] = 0; // set the initial fence value to 0
 	}
@@ -270,10 +270,10 @@ int D3DHelper_createFencesAndFenceEvent(ID3D12Device*& device,
 	fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	if (fenceEvent == nullptr)
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int D3DHelper_createRootSignature(ID3D12Device*& device, ID3D12RootSignature*& rootSignature)
@@ -305,16 +305,16 @@ int D3DHelper_createRootSignature(ID3D12Device*& device, ID3D12RootSignature*& r
 	hr = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, nullptr);
 	if (FAILED(hr))
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
 	hr = device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
 	if (FAILED(hr))
 	{
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
-	return EXIT_SUCCESS;
+	return OK;
 }
 
 int D3dHelper_createShaderByteCode(D3D12_SHADER_BYTECODE vertexShaderBytecode,LPCWSTR fileName, LPCSTR target)
@@ -337,14 +337,14 @@ int D3dHelper_createShaderByteCode(D3D12_SHADER_BYTECODE vertexShaderBytecode,LP
 	if (FAILED(hr))
 	{
 		OutputDebugStringA((char*)errorBuff->GetBufferPointer());
-		return EXIT_FAILURE;
+		return FAIL;
 	}
 
 	// fill out a shader bytecode structure, which is basically just a pointer
 	// to the shader bytecode and the size of the shader bytecode
 	vertexShaderBytecode.BytecodeLength = Shader->GetBufferSize();
 	vertexShaderBytecode.pShaderBytecode = Shader->GetBufferPointer();
-	return EXIT_SUCCESS;
+	return OK;
 
 }
 

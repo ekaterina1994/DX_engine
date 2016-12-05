@@ -9,6 +9,7 @@ using namespace DirectX;
 
 #include <stdlib.h>
 #include <iostream>
+#include <utility>
 #include <tchar.h>
 #include <assert.h>
 #include "Windows.h"
@@ -22,4 +23,8 @@ inline void ThrowIfFailed(HRESULT hr)
 		throw;
 	}
 }
+
+// My error codes
+#define OK 0
+#define FAIL 1
 
