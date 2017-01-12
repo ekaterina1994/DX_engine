@@ -1,6 +1,24 @@
 #include "Scene.h"
 
 
+int Scene::Update()
+{
+	m_fakeTime += 0.1f;
+	XMMATRIX matRotZ = XMMatrixRotationZ(m_fakeTime);
+
+	//static float y_pos = .0f;
+	//		y_pos += float(0.001);
+	XMFLOAT3 eyePos{ 20.0f, 20.0f, 20.0f };
+	XMFLOAT3 targetPos{ 0.0f, 0.0f, 0.0f };
+	XMFLOAT3 upVec{ 0.0f, 0.0f, 1.0f };
+
+	XMMATRIX matView = XMMatrixLookAtRH(XMLoadFloat3(&eyePos), XMLoadFloat3(&targetPos), XMLoadFloat3(&upVec));
+	XMMATRIX matProj = XMMatrixPerspectiveFovRH(XM_PIDIV4, 1.0f, 0.1f, 1000000.0f);
+	m_matViewProj = XMMatrixMultiplyTranspose(XMMatrixMultiply(matRotZ, matView), matProj);
+
+	return OK;
+}
+
 int Scene::AddModel(string name, Model&& inModel)
 {
 	m_models.insert({ name, inModel });
@@ -15,6 +33,86 @@ int Scene::AddModel(string name, Model& inModel)
 
 int Scene::Init()
 {
+	return OK;
+}
+
+int Scene::createSceneBoundingBox(Model & model)
+{
+	/*
+		m_camera->getBoundingBox();
+	*/
+	static Model::Material material;
+	Model::Geometry geometry;
+	Model::Position position;
+
+	static std::vector<Vertex> vBuffer = 
+	{
+		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z0, 0,0,0,-1,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z0, 0,0,0,-1,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z0, 0,0,0,-1,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z0, 0,0,0,-1,0,0,0),
+		
+		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z0, 0,0,1,0,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z0, 0,0,1,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z1, 0,0,1,0,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z1, 0,0,1,0,0,0,0),
+
+		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z0, 0,0,-1,0,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z0, 0,0,-1,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z1, 0,0,-1,0,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z1, 0,0,-1,0,0,0,0),
+
+		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z1, 0,0,0,1,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z1, 0,0,0,1,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z1, 0,0,0,1,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z1, 0,0,0,1,0,0,0),
+
+		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z0, 0,-1,0,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z1, 0,-1,0,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z1, 0,-1,0,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z0, 0,-1,0,0,0,0,0),
+
+		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z0, 0,1,0,1,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z1, 0,1,0,1,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z1, 0,1,0,1,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z0, 0,1,0,1,0,0,0),
+
+	};
+	static std::vector<uint32_t> iBuffer = 
+	{
+		0, 1, 2,
+		1, 2, 3,
+
+		4, 5, 6,
+		5, 6, 7,
+		
+		8, 9, 10,
+		9, 10, 11,
+
+		12, 13, 14,
+		13, 14, 15,
+
+		16, 17, 18,
+		17, 18, 19,
+
+		20, 21, 22,
+		21, 22, 23
+
+	};
+
+	getMaterial(material, D3D12_FILL_MODE_SOLID);// D3D12_FILL_MODE_WIREFRAME);
+
+	int vNumVerticies = static_cast<int>(vBuffer.size());
+	int iNumIndexes = static_cast<int>(iBuffer.size());
+	int iWholeSize = static_cast<int>(iBuffer.size() * sizeof(uint32_t));
+
+	getGeometry(geometry, &vBuffer[0], vNumVerticies, &iBuffer[0], iWholeSize, iNumIndexes);
+
+	getPosition(position);
+
+	model = Model(material, geometry, position);
+
+
 	return OK;
 }
 
@@ -76,8 +174,11 @@ int Scene::createModelFromFile(string name, Model & model)
 		}
 	}
 	// TODO: that should depend on the frustrum properties
-	vBuffer = scaleVBuffer(vBuffer, 10.0, 10.0, 10.0);
-	getMaterial(material);
+	vBuffer = scaleVBuffer(vBuffer, 
+		m_boundingBox.x1- m_boundingBox.x0, 
+		m_boundingBox.y1 - m_boundingBox.y0, 
+		m_boundingBox.z1 - m_boundingBox.z0);
+	getMaterial(material, D3D12_FILL_MODE_SOLID);
 
 	int vNumVerticies = static_cast<int>(vBuffer.size());
 	int iNumIndexes = static_cast<int>(iBuffer.size());
@@ -176,7 +277,7 @@ int Scene::getGeometry(Model::Geometry & geometry, Vertex* vArray, int vNumVerti
 	return OK;
 }
 
-int Scene::getMaterial(Model::Material & material)
+int Scene::getMaterial(Model::Material & material, D3D12_FILL_MODE in_rastMode)
 {
 	HRESULT hr;
 	ID3D12RootSignature* rootSignature;
@@ -221,7 +322,7 @@ int Scene::getMaterial(Model::Material & material)
 	CD3DX12_RASTERIZER_DESC rastDesc(D3D12_DEFAULT);
 	rastDesc.CullMode = D3D12_CULL_MODE::D3D12_CULL_MODE_NONE;
 
-	//rastDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	rastDesc.FillMode = in_rastMode;//D3D12_FILL_MODE_WIREFRAME;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {}; // a structure to define a pso
 	psoDesc.InputLayout = inputLayoutDesc; // the structure describing our input layout

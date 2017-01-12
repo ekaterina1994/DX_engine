@@ -130,28 +130,8 @@ int RenderingManager::UpdatePipeline()
 	m_commandList->RSSetScissorRects(1, &m_scissorRect);
 	m_commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	
-	
-	/*
-	for each (auto model in g_ApplicationPtr->m_resourceManager->getScenePtr()->getModels())
-	{
-		model.second.m_geometry.m_indexBufferView;
-		model.second.m_geometry.m_vertexBufferView;
-		model.second.m_material.m_pipelineState;
-		model.second.m_material.m_root_signature;
-		model.second.m_position.m_position;
-		model.second.m_position.m_rotMat;
-		model.second.m_position.m_worldMat;
-	}
-	*/
+	XMMATRIX* matViewProj = g_ApplicationPtr->m_resourceManager->getMatViewProj();
 
-	static float fakeTime = 0.0f;
-	fakeTime += 0.0005f;
-	XMMATRIX matRotZ = XMMatrixRotationZ(fakeTime);
-
-	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//! https://msdn.microsoft.com/en-us/library/ms177202.aspx !
-	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	for (auto& model : g_ApplicationPtr->m_resourceManager->getScenePtr()->getModels())
 	{
 		auto& material = model.second.m_material;
@@ -163,17 +143,7 @@ int RenderingManager::UpdatePipeline()
 		m_commandList->IASetVertexBuffers(0, 1, &geometry.m_vertexBufferView);
 		m_commandList->IASetIndexBuffer(&geometry.m_indexBufferView);
 
-		static float y_pos = 1.0f;
-		y_pos += float(0.005);
-		XMFLOAT3 eyePos{ 10.0f, y_pos, 15.0f};
-		XMFLOAT3 targetPos{0.0f, 0.0f, 0.0f};
-		XMFLOAT3 upVec{0.0f, 0.0f, 1.0f};
-
-		XMMATRIX matView = XMMatrixLookAtRH(XMLoadFloat3(&eyePos), XMLoadFloat3(&targetPos), XMLoadFloat3(&upVec));
-		XMMATRIX matProj = XMMatrixPerspectiveFovRH(XM_PIDIV4, 1.0f, 0.1f, 1000000.0f);
-		XMMATRIX matViewProj = XMMatrixMultiplyTranspose(XMMatrixMultiply(matRotZ, matView), matProj);
-
-		m_commandList->SetGraphicsRoot32BitConstants(0, 16, &matViewProj, 0); 
+		m_commandList->SetGraphicsRoot32BitConstants(0, 16, matViewProj, 0); 
 
 		m_commandList->DrawIndexedInstanced(geometry.m_numIndices, 1, 0, 0, 0);
 	}

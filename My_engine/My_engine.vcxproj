@@ -164,6 +164,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\Include\10.0.14393.0\um\d3d12sdklayers.h" />
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="D3DHelper.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="GeomertyConverter.h" />

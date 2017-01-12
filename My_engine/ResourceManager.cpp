@@ -14,17 +14,19 @@ int ResourceManager::Init()
 
 int ResourceManager::Update() 
 {
-	m_scene->Update();
-	return OK;
+	return m_scene->Update();;
 }
 
 int ResourceManager::InitScene()
 {
-	m_scene = new TestScene01();
-	m_scene->Init();
-	return OK;
+	m_scene = new TestScene01();	
+	return m_scene->Init();;
 }
 
+XMMATRIX * ResourceManager::getMatViewProj()
+{
+	return m_scene->getMatViewProj();
+}
 
 int ResourceManager::ClearAll()
 {
@@ -32,6 +34,5 @@ int ResourceManager::ClearAll()
 	{
 		delete m_scene;
 	}
-
 	return OK;
 }
