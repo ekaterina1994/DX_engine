@@ -329,6 +329,7 @@ int D3dHelper_createShaderByteCode(D3D12_SHADER_BYTECODE vertexShaderBytecode,LP
 		nullptr,
 		"main",
 		target,
+		
 		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,
 		0,
 		&Shader,

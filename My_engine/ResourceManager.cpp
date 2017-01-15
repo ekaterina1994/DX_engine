@@ -14,13 +14,15 @@ int ResourceManager::Init()
 
 int ResourceManager::Update() 
 {
-	return m_scene->Update();;
+	return m_scene->Update();
 }
 
 int ResourceManager::InitScene()
 {
-	m_scene = new TestScene01();	
-	return m_scene->Init();;
+	m_scene = new TestScene01();
+	m_scene->Init();
+	m_scene->LoadModels();
+	return OK;
 }
 
 XMMATRIX * ResourceManager::getMatViewProj()

@@ -3,19 +3,39 @@
 
 int Scene::Update()
 {
-	m_fakeTime += 0.1f;
+	m_fakeTime += 0.0001f;
 	XMMATRIX matRotZ = XMMatrixRotationZ(m_fakeTime);
 
 	//static float y_pos = .0f;
 	//		y_pos += float(0.001);
-	XMFLOAT3 eyePos{ 20.0f, 20.0f, 20.0f };
+
+	float Far = 20.0f;
+	XMFLOAT3 eyePos{ Far, Far, Far };
+	//eyePos = XMMatrixMultiply(matRotZ, eyePos);
+	XMVECTOR eye = XMVector3Transform(XMLoadFloat3(&eyePos), matRotZ);
+	XMFLOAT3 targetPos{ 0.0f, 0.0f, 0.0f };
+	XMFLOAT3 upVec{ 0.0f, 0.0f, 1.0f };
+
+	XMMATRIX matView = XMMatrixLookAtRH(eye, XMLoadFloat3(&targetPos), XMLoadFloat3(&upVec));
+	XMMATRIX matProj = XMMatrixPerspectiveFovRH(XM_PIDIV4, 1.0f, 0.1f, 1000000.0f);
+	m_matViewProj = XMMatrixMultiplyTranspose( matView, matProj);
+	
+	/*
+	m_fakeTime += 0.0001f;
+	XMMATRIX matRotZ = XMMatrixRotationZ(m_fakeTime);
+
+	//static float y_pos = .0f;
+	//		y_pos += float(0.001);
+
+	float Far = 20.0f;
+	XMFLOAT3 eyePos{ Far, Far, Far };
 	XMFLOAT3 targetPos{ 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 upVec{ 0.0f, 0.0f, 1.0f };
 
 	XMMATRIX matView = XMMatrixLookAtRH(XMLoadFloat3(&eyePos), XMLoadFloat3(&targetPos), XMLoadFloat3(&upVec));
 	XMMATRIX matProj = XMMatrixPerspectiveFovRH(XM_PIDIV4, 1.0f, 0.1f, 1000000.0f);
 	m_matViewProj = XMMatrixMultiplyTranspose(XMMatrixMultiply(matRotZ, matView), matProj);
-
+	*/
 	return OK;
 }
 
@@ -33,6 +53,14 @@ int Scene::AddModel(string name, Model& inModel)
 
 int Scene::Init()
 {
+	m_maxEdge = 10;
+	m_boundingBox.x0 = 0;
+	m_boundingBox.y0 = 0;
+	m_boundingBox.z0 = 0;
+	m_boundingBox.x1 = m_maxEdge;
+	m_boundingBox.y1 = m_maxEdge;
+	m_boundingBox.z1 = m_maxEdge;
+
 	return OK;
 }
 
@@ -47,35 +75,35 @@ int Scene::createSceneBoundingBox(Model & model)
 
 	static std::vector<Vertex> vBuffer = 
 	{
-		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z0, 0,0,0,-1,0,0,0),
-		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z0, 0,0,0,-1,0,0,0),
-		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z0, 0,0,0,-1,0,0,0),
-		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z0, 0,0,0,-1,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z0, 0,0,0,(-1)*m_maxEdge,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z0, 0,0,0,(-1)*m_maxEdge,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z0, 0,0,0,(-1)*m_maxEdge,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z0, 0,0,0,(-1)*m_maxEdge,0,0,0),
 		
-		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z0, 0,0,1,0,0,0,0),
-		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z0, 0,0,1,0,0,0,0),
-		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z1, 0,0,1,0,0,0,0),
-		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z1, 0,0,1,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z0, 0,0,m_maxEdge,0,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z0, 0,0,m_maxEdge,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z1, 0,0,m_maxEdge,0,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z1, 0,0,m_maxEdge,0,0,0,0),
 
-		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z0, 0,0,-1,0,0,0,0),
-		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z0, 0,0,-1,0,0,0,0),
-		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z1, 0,0,-1,0,0,0,0),
-		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z1, 0,0,-1,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z0, 0,0,(-1)*m_maxEdge,0,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z0, 0,0,(-1)*m_maxEdge,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z1, 0,0,(-1)*m_maxEdge,0,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z1, 0,0,(-1)*m_maxEdge,0,0,0,0),
 
-		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z1, 0,0,0,1,0,0,0),
-		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z1, 0,0,0,1,0,0,0),
-		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z1, 0,0,0,1,0,0,0),
-		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z1, 0,0,0,1,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z1, 0,0,0,m_maxEdge,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z1, 0,0,0,m_maxEdge,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z1, 0,0,0,m_maxEdge,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z1, 0,0,0,m_maxEdge,0,0,0),
 
-		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z0, 0,-1,0,0,0,0,0),
-		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z1, 0,-1,0,0,0,0,0),
-		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z1, 0,-1,0,0,0,0,0),
-		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z0, 0,-1,0,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z0, 0,(-1)*m_maxEdge,0,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y0, m_boundingBox.z1, 0,(-1)*m_maxEdge,0,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z1, 0,(-1)*m_maxEdge,0,0,0,0,0),
+		Vertex(m_boundingBox.x0, m_boundingBox.y1, m_boundingBox.z0, 0,(-1)*m_maxEdge,0,0,0,0,0),
 
-		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z0, 0,1,0,1,0,0,0),
-		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z1, 0,1,0,1,0,0,0),
-		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z1, 0,1,0,1,0,0,0),
-		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z0, 0,1,0,1,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z0, 0,m_maxEdge,0,0,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y0, m_boundingBox.z1, 0,m_maxEdge,0,0,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z1, 0,m_maxEdge,0,0,0,0,0),
+		Vertex(m_boundingBox.x1, m_boundingBox.y1, m_boundingBox.z0, 0,m_maxEdge,0,0,0,0,0),
 
 	};
 	static std::vector<uint32_t> iBuffer = 
@@ -100,8 +128,8 @@ int Scene::createSceneBoundingBox(Model & model)
 
 	};
 
-	getMaterial(material, D3D12_FILL_MODE_SOLID);// D3D12_FILL_MODE_WIREFRAME);
-
+	getMaterial(material, D3D12_FILL_MODE_WIREFRAME);// D3D12_FILL_MODE_SOLID);
+	
 	int vNumVerticies = static_cast<int>(vBuffer.size());
 	int iNumIndexes = static_cast<int>(iBuffer.size());
 	int iWholeSize = static_cast<int>(iBuffer.size() * sizeof(uint32_t));
@@ -178,7 +206,7 @@ int Scene::createModelFromFile(string name, Model & model)
 		m_boundingBox.x1- m_boundingBox.x0, 
 		m_boundingBox.y1 - m_boundingBox.y0, 
 		m_boundingBox.z1 - m_boundingBox.z0);
-	getMaterial(material, D3D12_FILL_MODE_SOLID);
+	getMaterial(material, D3D12_FILL_MODE_WIREFRAME);// D3D12_FILL_MODE_SOLID);
 
 	int vNumVerticies = static_cast<int>(vBuffer.size());
 	int iNumIndexes = static_cast<int>(iBuffer.size());
@@ -217,7 +245,7 @@ std::vector<Vertex> Scene::scaleVBuffer(std::vector<Vertex>& vBuffer, float xMax
 			biggestAxis = i;
 		}
 	}
-
+	/*
 	bool isOutOfTheBox = false;
 
 	for (int i = 0; i < 3; i++)
@@ -229,16 +257,16 @@ std::vector<Vertex> Scene::scaleVBuffer(std::vector<Vertex>& vBuffer, float xMax
 		}
 	}
 	// nothing to scale
-	if (!isOutOfTheBox) return vBuffer;
+	if (!isOutOfTheBox) return vBuffer;*/
 
-	float divider = wantedMaxes[biggestAxis] / localMaxes[biggestAxis];
+	float scaleFactor = wantedMaxes[biggestAxis] / localMaxes[biggestAxis];
 	std::vector<Vertex> out;
 	for each (auto& vertex in vBuffer)
 	{
 		out.push_back({
-			vertex.position.x * divider,
-			vertex.position.y * divider,
-			vertex.position.z * divider,
+			vertex.position.x * scaleFactor,
+			vertex.position.y * scaleFactor,
+			vertex.position.z * scaleFactor,
 			1.0,
 			vertex.normal.x,
 			vertex.normal.y,

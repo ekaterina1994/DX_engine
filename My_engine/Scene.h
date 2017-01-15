@@ -20,7 +20,9 @@ public:
 
 	int AddModel(string name, Model& inModel);
 
-	virtual int Init();
+	int Init();
+
+	virtual int LoadModels() { return OK; };
 	
 	map<string, Model>& getModels() { return m_models; }
 	
@@ -54,6 +56,7 @@ private:
 	XMMATRIX						m_matViewProj;
 	float							m_fakeTime = 0;
 	BoundingBox						m_boundingBox;
+	int								m_maxEdge;
 	//TODO: Camera							m_camera;
 
 };
